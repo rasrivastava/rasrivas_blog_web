@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Logical Volume Manager (LVM) in Linux | Rahul Srivastava Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
+With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.
+The physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it.">
+<meta name="author" content="">
+<link rel="canonical" href="https://rasrivas.netlify.app/posts/partition_basics_2/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.ec8da366ca2fb647537ccb7a8f6fa5b4e9cd3c7a0d3171dd2d3baad1e49c8bfc.css" integrity="sha256-7I2jZsovtkdTfMt6j2&#43;ltOnNPHoNMXHdLTuq0eSci/w=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.2840b7fccd34145847db71a290569594bdbdb00047097f75d6495d162f5d7dff.js" integrity="sha256-KEC3/M00FFhH23GikFaVlL29sABHCX911kldFi9dff8="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://rasrivas.netlify.app/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://rasrivas.netlify.app/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://rasrivas.netlify.app/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://rasrivas.netlify.app/apple-touch-icon.png">
+<link rel="mask-icon" href="https://rasrivas.netlify.app/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Logical Volume Manager (LVM) in Linux" />
+<meta property="og:description" content="LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
+With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.
+The physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://rasrivas.netlify.app/posts/partition_basics_2/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-05-08T18:00:41&#43;05:30" />
+<meta property="article:modified_time" content="2022-05-08T18:00:41&#43;05:30" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Logical Volume Manager (LVM) in Linux"/>
+<meta name="twitter:description" content="LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
+With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.
+The physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://rasrivas.netlify.app/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Logical Volume Manager (LVM) in Linux",
+      "item": "https://rasrivas.netlify.app/posts/partition_basics_2/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Logical Volume Manager (LVM) in Linux",
+  "name": "Logical Volume Manager (LVM) in Linux",
+  "description": "LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.\nWith LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.\nThe physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it.",
+  "keywords": [
+    
+  ],
+  "articleBody": "LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.\nWith LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.\nThe physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it. If the root (/) partition is on a logical volume, create a separate /boot partition which is not a part of a volume group.\nSince a physical volume cannot span over multiple drives, to span over more than one drive, create one or more physical volumes per drive.\nThe volume groups can be divided into logical volumes, which are assigned mount points, such as /home and / and file system types, such as ext2 or ext3. When “partitions” reach their full capacity, free space from the volume group can be added to the logical volume to increase the size of the partition. When a new hard drive is added to the system, it can be added to the volume group, and partitions that are logical volumes can be increased in size.\nOn the other hand, if a system is partitioned with the ext3 file system, the hard drive is divided into partitions of defined sizes. If a partition becomes full, it is not easy to expand the size of the partition. Even if the partition is moved to another hard drive, the original hard drive space has to be reallocated as a different partition or not used.\nAdding two new hard disk to the system   nvme0n2 (2 G)\n  nvme0n2 (3 G)\n  Verifying it if its detechted by the system\n  # lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 2G 0 disk nvme0n3 259:4 0 3G 0 disk #     Formatting these partiontions:  creating partition for /dev/nvme0n2  # fdisk /dev/nvme0n2   Verifying it, we will see a partition nvme0n2p1 for the nvme0n2 hard disk\n# lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 2G 0 disk └─nvme0n2p1 259:6 0 1K 0 part nvme0n3 259:4 0 3G 0 disk #  creating partition for /dev/nvme0n3 # fdisk /dev/nvme0n3  verifying it, we will see a new partition nvme0n3p1 for the nvme0n3 hard disk # lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 2G 0 disk └─nvme0n2p1 259:6 0 1K 0 part nvme0n3 259:4 0 3G 0 disk └─nvme0n3p1 259:7 0 1K 0 part #     We have created below partitions are demoing LVM concept  We have created two partition  nvme0n2 at /dev/nvme0n2 location nvme0n3 at /dev/nvme0n2 location   nvme0n2 and nvme0n3 are called as partions  Creating Physical Volume for /dev/nvme0n2 and /dev/nvme0n2   Creating pvcreate for /dev/nvme0n2\n# pvcreate /dev/nvme0n2 Physical volume \"/dev/nvme0n2\" successfully created.   Listing the /dev/nvme0n2 using pvdisplay\n# pvdisplay /dev/nvme0n2 \"/dev/nvme0n2\" is a new physical volume of \"2.00 GiB\" --- NEW Physical volume --- PV Name /dev/nvme0n2 VG Name PV Size 2.00 GiB Allocatable NO   Creating pvcreate for /dev/nvme0n3\n# pvcreate /dev/nvme0n3 Physical volume \"/dev/nvme0n3\" successfully created.   Listing the /dev/nvme0n3 using pvdisplay\n# pvdisplay /dev/nvme0n3 \"/dev/nvme0n3\" is a new physical volume of \"3.00 GiB\" --- NEW Physical volume --- PV Name /dev/nvme0n3 VG Name PV Size 3.00 GiB Allocatable NO   Creating Volume Group for /dev/nvme0n2 and /dev/nvme0n3   Listing all the vgdisplay\n# vgdisplay --- Volume group --- VG Name rhel_192 System ID Format lvm2 Metadata Areas 1 Metadata Sequence No 4 VG Access read/write VG Status resizable MAX LV 0 Cur LV 3 Open LV 3 Max PV 0 Cur PV 1 Act PV 1 VG Size   Creating vgcreate for /dev/nvme0n2 and /dev/nvme0n3 physical volume\n# vgcreate rasrivas_vg /dev/nvme0n2 /dev/nvme0n3 Volume group \"rasrivas_vg\" successfully created #   Listing vgdisplay for rasrivas_vg\n# vgdisplay rasrivas_vg --- Volume group --- VG Name rasrivas_vg System ID Format lvm2 Metadata Areas 2 Metadata Sequence No 1 VG Access read/write VG Status resizable MAX LV 0 Cur LV 0 Open LV 0 Max PV 0 Cur PV 2 Act PV 2 VG Size 4.99 GiB PE Size 4.00 MiB Total PE 1278 Alloc PE / Size 0 / 0 Free PE / Size 1278 / 4.99 GiB VG UUID G9mXOZ-fEwq-SqQ5-sGXN-Kfac-n7Zb-Tp9euu #   Listing pvdisplay for /dev/nvme0n3\n we will see rasrivas_vg volume group is attached to /dev/nvme0n3 physical volume # pvdisplay /dev/nvme0n3 --- Physical volume --- PV Name /dev/nvme0n3 VG Name rasrivas_vg  we will see rasrivas_vg volume group is attached to /dev/nvme0n2 physical volume # pvdisplay /dev/nvme0n2 --- Physical volume --- PV Name /dev/nvme0n2 VG Name rasrivas_vg     Creating Logical Volume for the “rasrivas_vg” Volume Group   Creating logical volume\n# lvcreate --size 4G --name rasrivas_lv rasrivas_vg Logical volume \"rasrivas_lv\" created. ``   Listing the logical volume\n# lvdisplay rasrivas_vg/rasrivas_lv --- Logical volume --- LV Path /dev/rasrivas_vg/rasrivas_lv   Formatting the /dev/rasrivas_vg/rasrivas_lv partition (logical volume)  Formatting the partition # mkfs.ext4 /dev/rasrivas_vg/rasrivas_lv mke2fs 1.45.4 (23-Sep-2019) Creating filesystem with 1048576 4k blocks and 262144 inodes Filesystem UUID: 4573229e-20f4-4bf1-822d-2958d5eeaeb5 Superblock backups stored on blocks: 32768, 98304, 163840, 229376, 294912, 819200, 884736 Allocating group tables: done Writing inode tables: done Creating journal (16384 blocks): done Writing superblocks and filesystem accounting information: done   Mounting the /dev/rasrivas_vg/rasrivas_lv partition (logical volume)   Creating a directroy where to be mounted # mkdir rasrivas_mp\n  Mounting the partition\n# mount /dev/rasrivas_vg/rasrivas_lv rasrivas_mp #   Verifying the mounted partition\n# lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 2G 0 disk └─rasrivas_vg-rasrivas_lv 253:3 0 4G 0 lvm /root/rasrivas_mp nvme0n3 259:4 0 3G 0 disk └─rasrivas_vg-rasrivas_lv 253:3 0 4G 0 lvm /root/rasrivas_mp # # df -h Filesystem Size Used Avail Use% Mounted on devtmpfs 2.1G 0 2.1G 0% /dev tmpfs 2.1G 0 2.1G 0% /dev/shm tmpfs 2.1G 9.7M 2.1G 1% /run tmpfs 2.1G 0 2.1G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root 50G 4.6G 46G 10% / /dev/mapper/rhel_192-home 45G 352M 45G 1% /home /dev/nvme0n1p1 1014M 211M 804M 21% /boot tmpfs 420M 1.2M 419M 1% /run/user/42 tmpfs 420M 4.0K 420M 1% /run/user/0 /dev/mapper/rasrivas_vg-rasrivas_lv 3.9G 16M 3.7G 1% /root/rasrivas_mp # # ls -l /dev/mapper/rasrivas_vg-rasrivas_lv lrwxrwxrwx. 1 root root 7 May 31 22:19 /dev/mapper/rasrivas_vg-rasrivas_lv - ../dm-3 #   If we want to increase/decrease storage for the entire partition then we can ask Logical Group   NOTE\n We can only increase the size of the *Logical Group if Volume Group has space available  otherwise we need tp follow below steps:  *Firstly we need to increase the size of the Volume Group by adding more Physical Volome Secondly then we can increse the size of the *Logical Group        Checking the current size for the /dev/mapper/rasrivas_vg-rasrivas_lv filesystem using df -hT command\n It will show its having 3.9G capacity (Maximum Size) # df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 2.1G 0 2.1G 0% /dev tmpfs tmpfs 2.1G 0 2.1G 0% /dev/shm tmpfs tmpfs 2.1G 9.7M 2.1G 1% /run tmpfs tmpfs 2.1G 0 2.1G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 4.6G 46G 10% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot tmpfs tmpfs 420M 1.2M 419M 1% /run/user/42 tmpfs tmpfs 420M 4.0K 420M 1% /run/user/0 /dev/mapper/rasrivas_vg-rasrivas_lv ext4 3.9G 16M 3.7G 1% /root/rasrivas_mp #     Now, Increasing the partition size to 500M\n# lvextend --size +500M /dev/mapper/rasrivas_vg-rasrivas_lv Size of logical volume rasrivas_vg/rasrivas_lv changed from 4.00 GiB (1024 extents) to   If we again see the for the /dev/mapper/rasrivas_vg-rasrivas_lv filesystem using df -hT command\n Again, it will show its having 3.9G capacity (Maximum Size) because we need to format the partition again.  Reasons  df command only shows the size which is formated    # df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 2.1G 0 2.1G 0% /dev tmpfs tmpfs 2.1G 0 2.1G 0% /dev/shm tmpfs tmpfs 2.1G 9.7M 2.1G 1% /run tmpfs tmpfs 2.1G 0 2.1G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 4.6G 46G 10% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot tmpfs tmpfs 420M 1.2M 419M 1% /run/user/42 tmpfs tmpfs 420M 4.0K 420M 1% /run/user/0 /dev/mapper/rasrivas_vg-rasrivas_lv ext4 3.9G 16M 3.7G 1% /root/rasrivas_mp #     Formatting the partition  If we use below command, it will fisrt delete the data in this partition and then it will format # mkfs.ext4 /dev/rasrivas_vg/rasrivas_lv We dont want to loose our old data, to overcome this situation, we use resize2fs command  resize2fs command is used to format the remaining without loosing the old data of same partition   Formatting the partition using resize2fs command # resize2fs /dev/rasrivas_vg/rasrivas_lv resize2fs 1.45.4 (23-Sep-2019) Filesystem at /dev/rasrivas_vg/rasrivas_lv is mounted on /root/rasrivas_mp; on-line resizing required old_desc_blocks = 1, new_desc_blocks = 1 The filesystem on /dev/rasrivas_vg/rasrivas_lv is now 1176576 (4k) blocks long.  Now, if we check the size for the /dev/rasrivas_vg/rasrivas_lv partition, it will be increased to 500M and will be 4.4G # df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 2.1G 0 2.1G 0% /dev tmpfs tmpfs 2.1G 0 2.1G 0% /dev/shm tmpfs tmpfs 2.1G 9.7M 2.1G 1% /run tmpfs tmpfs 2.1G 0 2.1G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 4.6G 46G 10% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot tmpfs tmpfs 420M 1.2M 419M 1% /run/user/42 tmpfs tmpfs 420M 4.0K 420M 1% /run/user/0 /dev/mapper/rasrivas_vg-rasrivas_lv ext4 4.4G 16M 4.2G 1% /root/rasrivas_mp #   Increating the size for the Volume Group   We can only increase the size of the *Logical Group if Volume Group has space available\n otherwise we need tp follow below steps:  *Firstly we need to increase the size of the Volume Group by adding more Physical Volome Secondly then we can increse the size of the *Logical Group      Creating Physical Volume for /dev/nvme0n4 partition which if of 2Gib size\n# pvcreate /dev/nvme0n4 Physical volume \"/dev/nvme0n4\" successfully created. #   Verifying if /dev/nvme0n4 is created\n# pvdisplay /dev/nvme0n4 \"/dev/nvme0n4\" is a new physical volume of \"2.00 GiB\" --- NEW Physical volume --- PV Name /dev/nvme0n4 VG Name PV Size 2.00 GiB Allocatable NO PE Size 0 Total PE 0 Free PE 0 Allocated PE 0 PV UUID 8EXbjv-q8SP-ROG3-RqHq-y1ES-D16q-a3dR3I #   Now, we will increase the *Volume Group size by using vgextend command\n# vgextend rasrivas_vg /dev/nvme0n4 Volume group \"rasrivas_vg\" successfully extended #   Verifying if the size for the rasrivas_vg, it should be **4.99 + 2 = 6.99 GiB\n# vgdisplay rasrivas_vg --- Volume group --- VG Name rasrivas_vg System ID Format lvm2 Metadata Areas 3 Metadata Sequence No 4 VG Access read/write VG Status resizable MAX LV 0 Cur LV 1 Open LV 0 Max PV 0 Cur PV 3 Act PV 3 VG Size   Decreasing the size of the Logical Volume but first we create the Logical Volume from the scratch   Adding two new hard disk of size\n  nvme0n2 (5 G)\n  nvme0n2 (5 G)\n  # lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 5G 0 disk nvme0n3 259:4 0 5G 0 disk #     Now, formatting these partiontions:\n creating partition for /dev/nvme0n2  [root@rasrivas ~]# fdisk /dev/nvme0n2 Welcome to fdisk (util-linux 2.32.1). Changes will remain in memory only, until you decide to write them. Be careful before using the write command. Device does not contain a recognized partition table. Created a new DOS disklabel with disk identifier 0x193c523e. Command (m for help): n Partition type p primary (0 primary, 0 extended, 4 free) e extended (container for logical partitions) Select (default p): e Partition number (1-4, default 1): First sector (2048-10485759, default 2048): Last sector, +sectors or +size{K,M,G,T,P} (2048-10485759, default 10485759): Created a new partition 1 of type 'Extended' and of size 5 GiB. Command (m for help): w The partition table has been altered. Calling ioctl() to re-read partition table. Syncing disks. #   Verifying it, we will see a partition nvme0n2p1 for the nvme0n2 hard disk\n[root@rasrivas ~]# lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 5G 0 disk └─nvme0n2p1 259:6 0 1K 0 part nvme0n3 259:4 0 5G 0 disk #  creating partition for /dev/nvme0n3 # fdisk /dev/nvme0n3 Welcome to fdisk (util-linux 2.32.1). Changes will remain in memory only, until you decide to write them. Be careful before using the write command. Device does not contain a recognized partition table. Created a new DOS disklabel with disk identifier 0xe5ec6e43. Command (m for help): n Partition type p primary (0 primary, 0 extended, 4 free) e extended (container for logical partitions) Select (default p): e Partition number (1-4, default 1): First sector (2048-10485759, default 2048): Last sector, +sectors or +size{K,M,G,T,P} (2048-10485759, default 10485759): Created a new partition 1 of type 'Extended' and of size 5 GiB. Command (m for help): w The partition table has been altered. Calling ioctl() to re-read partition table. Syncing disks. #  verifying it, we will see a new partition nvme0n3p1 for the nvme0n3 hard disk [root@rasrivas ~]# lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 5G 0 disk └─nvme0n2p1 259:6 0 1K 0 part nvme0n3 259:4 0 5G 0 disk └─nvme0n3p1 259:7 0 1K 0 part #     Creating Physical Volume for the /dev/nvme0n2 and /dev/nvme0n3\n[root@rasrivas ~]# pvcreate /dev/nvme0n2 WARNING: dos signature detected on /dev/nvme0n2 at offset 510. Wipe it? [y/n]: y Wiping dos signature on /dev/nvme0n2. Physical volume \"/dev/nvme0n2\" successfully created. [root@rasrivas ~]# pvcreate /dev/nvme0n3 WARNING: dos signature detected on /dev/nvme0n3 at offset 510. Wipe it? [y/n]: y Wiping dos signature on /dev/nvme0n3. Physical volume \"/dev/nvme0n3\" successfully created. #   verifying it using pvdisplay\n# pvdisplay /dev/nvme0n2 \"/dev/nvme0n2\" is a new physical volume of \"5.00 GiB\" --- NEW Physical volume --- PV Name /dev/nvme0n2 VG Name PV Size 5.00 GiB Allocatable NO PE Size 0 Total PE 0 Free PE 0 Allocated PE 0 PV UUID G7hzUX-cqXS-A9v1-9VaS-k4Yl-ZEUd-Klj9RL # pvdisplay /dev/nvme0n3 \"/dev/nvme0n3\" is a new physical volume of \"5.00 GiB\" --- NEW Physical volume --- PV Name /dev/nvme0n3 VG Name PV Size 5.00 GiB Allocatable NO PE Size 0 Total PE 0 Free PE 0 Allocated PE 0 PV UUID d4XYBS-3HMS-MURj-0EvE-NceI-24ns-lzoPIh #     Creating Volume Group for the /dev/nvme0n2 and /dev/nvme0n3\n  creating Volume Group\n# vgcreate mydemovg /dev/nvme0n2 /dev/nvme0n3 Volume group \"mydemovg\" successfully created #   verifying volume group for the mydemovg, it should around 10 GB space and available PV count should be 2\n[root@rasrivas ~]# vgdisplay mydemovg --- Volume group --- VG Name mydemovg System ID Format lvm2 Metadata Areas 2 Metadata Sequence No 1 VG Access read/write VG Status resizable MAX LV 0 Cur LV 0 Open LV 0 Max PV 0 Cur PV 2 Act PV 2 VG Size 9.99 GiB PE Size 4.00 MiB Total PE 2558 Alloc PE / Size 0 / 0 Free PE / Size 2558 / 9.99 GiB VG UUID KlvYYf-tlSb-Jd0p-d6sr-ORAO-MEPD-q0QM5G #     Now, now finally creating logical volume\n creating a LV of 7 GB size # lvcreate --size 7G --name mydemolv mydemovg WARNING: dos signature detected on /dev/mydemovg/mydemolv at offset 510. Wipe it? [y/n]: y Wiping dos signature on /dev/mydemovg/mydemolv. Logical volume \"mydemolv\" created. #     verifying it\n# lvdisplay --- Logical volume --- LV Path /dev/mydemovg/mydemolv LV Name mydemolv VG Name mydemovg LV UUID aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG LV Write Access read/write LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530 LV Status available # open 0 LV Size 7.00 GiB Current LE 1792 Segments 2 Allocation inherit Read ahead sectors auto - currently set to 8192 Block device 253:3   Now, we will format this partition\n[root@rasrivas ~]# mkfs.ext4 /dev/mydemovg/mydemolv mke2fs 1.45.4 (23-Sep-2019) Creating filesystem with 1835008 4k blocks and 458752 inodes Filesystem UUID: fe2bf001-7323-4f9c-a00e-525f12ed6098 Superblock backups stored on blocks: 32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632 Allocating group tables: done Writing inode tables: done Creating journal (16384 blocks): done Writing superblocks and filesystem accounting information: done #   Now, mounting this partition\n# mkdir mydemodirectory # ls -la mydemodirectory total 4 drwxr-xr-x. 2 root root 6 Jul 11 16:41 . dr-xr-x---. 26 root root 4096 Jul 11 16:41 .. # # mount /dev/mydemovg/mydemolv mydemodirectory #  verfiying it  # lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 5G 0 disk └─mydemovg-mydemolv 253:3 0 7G 0 lvm /root/mydemodirectory nvme0n3 259:4 0 5G 0 disk └─mydemovg-mydemolv 253:3 0 7G 0 lvm /root/mydemodirectory #   Now, we will decrease the size the Logical Volume  There are five steps:  Offline (Umonut )the partition Clean/Scan the partition – Reformat LV reduce Online (Mount)    Step1: Offline (Umonut) the partition\n  Listing the existing partitions /dev/mapper/mydemovg-mydemolv which is mounted at /root/mydemodirectory location\n# df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 1.6G 0 1.6G 0% /dev tmpfs tmpfs 1.6G 4.0K 1.6G 1% /dev/shm tmpfs tmpfs 1.6G 9.7M 1.6G 1% /run tmpfs tmpfs 1.6G 0 1.6G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 9.9G 41G 20% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot /dev/sr0 iso9660 7.9G 7.9G 0 100% /dvd tmpfs tmpfs 316M 1.2M 315M 1% /run/user/42 tmpfs tmpfs 316M 4.0K 316M 1% /run/user/0 /dev/mapper/mydemovg-mydemolv ext4 6.9G 32M 6.5G 1% /root/mydemodirectory #   Unmonting the partitons, which is also called making this partition as OFFLINE\n# umount /root/mydemodirectory #   Verifying it\n# df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 1.6G 0 1.6G 0% /dev tmpfs tmpfs 1.6G 4.0K 1.6G 1% /dev/shm tmpfs tmpfs 1.6G 9.7M 1.6G 1% /run tmpfs tmpfs 1.6G 0 1.6G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 9.9G 41G 20% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot /dev/sr0 iso9660 7.9G 7.9G 0 100% /dvd tmpfs tmpfs 316M 1.2M 315M 1% /run/user/42 tmpfs tmpfs 316M 4.0K 316M 1% /run/user/0 #   Step2: Scan and Clean the Filesystem\n  Scanning and cleaning the /dev/mapper/mydemovg-mydemolv Filesystem using e2fsck command\n This will check all the bad/ corrupt sectors for this Filesystem  # e2fsck -f /dev/mapper/mydemovg-mydemolv e2fsck 1.45.4 (23-Sep-2019) Pass 1: Checking inodes, blocks, and sizes Pass 2: Checking directory structure Pass 3: Checking directory connectivity Pass 4: Checking reference counts Pass 5: Checking group summary information /dev/mapper/mydemovg-mydemolv: 11/458752 files (0.0% non-contiguous), 53247/1835008 blocks #   Step3: Reformat the Filesystem to reduce the size\n  Now, we can want to reduce the size to 6G\n  For this we need to online format it\n  Reormatting it to reduce the size to 6G\n# resize2fs /dev/mapper/mydemovg-mydemolv 6G resize2fs 1.45.4 (23-Sep-2019) Resizing the filesystem on /dev/mapper/mydemovg-mydemolv to 1572864 (4k) blocks. The filesystem on /dev/mapper/mydemovg-mydemolv is now 1572864 (4k) blocks long. #   Now, we check the partition size it wil still show 7G\n# lvdisplay --- Logical volume --- LV Path /dev/mydemovg/mydemolv LV Name mydemolv VG Name mydemovg LV UUID aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG LV Write Access read/write LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530 LV Status available # open 0 LV Size 7.00 GiB Current LE 1792 Segments 2 Allocation inherit Read ahead sectors auto - currently set to 8192 Block device 253:3   Step4: Reduce the size\n  Reducing the size for the LV\n it can be using by two commands  lvreduce –size -1G /dev/mydemovg/mydemolv lvreduce –size 6G /dev/mydemovg/mydemolv   Reducing it # lvreduce --size 6G /dev/mydemovg/mydemolv WARNING: Reducing active logical volume to 6.00 GiB. THIS MAY DESTROY YOUR DATA (filesystem etc.) Do you really want to reduce mydemovg/mydemolv? [y/n]: y Size of logical volume mydemovg/mydemolv changed from 7.00 GiB (1792 extents) to 6.00 GiB (1536 extents). Logical volume mydemovg/mydemolv successfully resized. #     verifying it, it should be now 6.00 GiB\n# lvdisplay --- Logical volume --- LV Path /dev/mydemovg/mydemolv LV Name mydemolv VG Name mydemovg LV UUID aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG LV Write Access read/write LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530 LV Status available # open 0 LV Size 6.00 GiB Current LE 1536 Segments 2 Allocation inherit Read ahead sectors auto - currently set to 8192 Block device 253:3   now, we can see around 3.99 GiB is free in the VG\n# vgdisplay mydemovg --- Volume group --- VG Name mydemovg System ID Format lvm2 Metadata Areas 2 Metadata Sequence No 3 VG Access read/write VG Status resizable MAX LV 0 Cur LV 1 Open LV 0 Max PV 0 Cur PV 2 Act PV 2 VG Size 9.99 GiB PE Size 4.00 MiB Total PE 2558 Alloc PE / Size 1536 / 6.00 GiB Free PE / Size 1022 / 3.99 GiB VG UUID KlvYYf-tlSb-Jd0p-d6sr-ORAO-MEPD-q0QM5G #   Step5: mounting the partition\n  mounting it\n# mount /dev/mydemovg/mydemolv mydemodirectory   we can verify it\n# df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 1.6G 0 1.6G 0% /dev tmpfs tmpfs 1.6G 4.0K 1.6G 1% /dev/shm tmpfs tmpfs 1.6G 9.7M 1.6G 1% /run tmpfs tmpfs 1.6G 0 1.6G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 9.9G 41G 20% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot /dev/sr0 iso9660 7.9G 7.9G 0 100% /dvd tmpfs tmpfs 316M 1.2M 315M 1% /run/user/42 tmpfs tmpfs 316M 4.0K 316M 1% /run/user/0 /dev/mapper/mydemovg-mydemolv ext4 5.9G 28M 5.6G 1% /root/mydemodirectory   Again if we want to increase the size of the LV # lvextend --size +2G /dev/mydemovg/mydemolv Size of logical volume mydemovg/mydemolv changed from 6.00 GiB (1536 extents) to 8.00 GiB (2048 extents). Logical volume mydemovg/mydemolv successfully resized.  now, we can see the size will be incresed by 2GB and total will be 8 GB  # lvdisplay --- Logical volume --- LV Path /dev/mydemovg/mydemolv LV Name mydemolv VG Name mydemovg LV UUID aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG LV Write Access read/write LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530 LV Status available # open 1 LV Size 8.00 GiB Current LE 2048 Segments 2 Allocation inherit Read ahead sectors auto - currently set to 8192 Block device 253:3   remount it\n# resize2fs /dev/mydemovg/mydemolv resize2fs 1.45.4 (23-Sep-2019) Filesystem at /dev/mydemovg/mydemolv is mounted on /root/mydemodirectory; on-line resizing required old_desc_blocks = 1, new_desc_blocks = 1 The filesystem on /dev/mydemovg/mydemolv is now 2097152 (4k) blocks long.   we can verify it\n# df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 1.6G 0 1.6G 0% /dev tmpfs tmpfs 1.6G 4.0K 1.6G 1% /dev/shm tmpfs tmpfs 1.6G 9.7M 1.6G 1% /run tmpfs tmpfs 1.6G 0 1.6G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 9.9G 41G 20% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot /dev/sr0 iso9660 7.9G 7.9G 0 100% /dvd tmpfs tmpfs 316M 1.2M 315M 1% /run/user/42 tmpfs tmpfs 316M 4.0K 316M 1% /run/user/0 /dev/mapper/mydemovg-mydemolv ext4 7.9G 32M 7.4G 1% /root/mydemodirectory   Formatting the partition for “xfs” format type   resize2fs only works for ext4 format type\n  For xfs format type, we have to use\n# df -hT Filesystem Type Size Used Avail Use% Mounted on devtmpfs devtmpfs 1.6G 0 1.6G 0% /dev tmpfs tmpfs 1.6G 4.0K 1.6G 1% /dev/shm tmpfs tmpfs 1.6G 9.7M 1.6G 1% /run tmpfs tmpfs 1.6G 0 1.6G 0% /sys/fs/cgroup /dev/mapper/rhel_192-root xfs 50G 9.9G 41G 20% / /dev/mapper/rhel_192-home xfs 45G 352M 45G 1% /home /dev/nvme0n1p1 xfs 1014M 211M 804M 21% /boot /dev/sr0 iso9660 7.9G 7.9G 0 100% /dvd tmpfs tmpfs 316M 1.2M 315M 1% /run/user/42 tmpfs tmpfs 316M 4.0K 316M 1% /run/user/0 /dev/mapper/mydemovg-mydemolv ext4 7.9G 32M 7.4G 1% /root/mydemodirectory #   below is command for it\n# xfs_growfs /dev/mapper/rhel_192-home meta-data=/dev/mapper/rhel_192-home isize=512 agcount=4, agsize=2934016 blks = sectsz=512 attr=2, projid32bit=1 = crc=1 finobt=1, sparse=1, rmapbt=0 = reflink=1 data = bsize=4096 blocks=11736064, imaxpct=25 = sunit=0 swidth=0 blks naming =version 2 bsize=4096 ascii-ci=0, ftype=1 log =internal log bsize=4096 blocks=5730, version=2 = sectsz=512 sunit=0 blks, lazy-count=1 realtime =none extsz=4096 blocks=0, rtextents=0   Extending and reducing the “xfs” type format  xfs format type which uses xfs_growfs command does not support for reduce of LVM (it only supports for extend)  Size type provided by PV and VG   Size type provided by PV and VG are not in byte or sector type\n  Its in form of PE Size for PV and LV and PE Size size is by default 4.00 MiB\n  For example:\n# pvdisplay /dev/nvme0n2 --- Physical volume --- PV Name /dev/nvme0n2 VG Name mydemovg PV Size 5.00 GiB / not usable 4.00 MiB Allocatable yes (but full) PE Size 4.00 MiB Total PE 1279 Free PE 0 Allocated PE 1279 PV UUID G7hzUX-cqXS-A9v1-9VaS-k4Yl-ZEUd-Klj9RL   here PE Size is 4.00 MiB and total PE size is 1279\n  4.00 MiB * 1279 = 5116 MiB OR 5.00 GiB\n  This we are discussing because whenever we lv for which is not mulitple of 4 either will increse the size or decrease the size of its own\n  In below example, we are going to create lv of 10M, as its not multiple of 4, either will create 8M or 12M\n# lvcreate --size 10M --name demolv2 mydemovg Rounding up size to full physical extent 12.00 MiB Logical volume \"demolv2\" created.   If we want to change the size of PE Size, we can use $ vgcreate -s OR $ vgcreate -physicalextentsize command\n$ man vgcreate -s|--physicalextentsize Size[m|UNIT] Sets the physical extent size of PVs in the VG. The value must be either a power of 2 of at least 1 sector (where the sector size is the largest sector size of the PVs currently used in the VG), or at least 128KiB. Once this value has been set, it is difficult to change without recreating the VG, unless no extents need moving.   ",
+  "wordCount" : "4728",
+  "inLanguage": "en",
+  "datePublished": "2022-05-08T18:00:41+05:30",
+  "dateModified": "2022-05-08T18:00:41+05:30",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://rasrivas.netlify.app/posts/partition_basics_2/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rahul Srivastava Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://rasrivas.netlify.app/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://rasrivas.netlify.app/" accesskey="h" title="Rahul Srivastava Blog (Alt + H)">Rahul Srivastava Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://rasrivas.netlify.app/categories" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://rasrivas.netlify.app/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://rasrivas.netlify.app/archives" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://rasrivas.netlify.app/">Home</a>&nbsp;»&nbsp;<a href="https://rasrivas.netlify.app/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Logical Volume Manager (LVM) in Linux
+    </h1>
+    <div class="post-meta"><span title='2022-05-08 18:00:41 +0530 IST'>May 8, 2022</span>&nbsp;·&nbsp;23 min
+
+</div>
+  </header> 
+  <div class="post-content"><p>LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.</p>
+<p>With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.</p>
+<p>The physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it. If the root (/) partition is on a logical volume, create a separate /boot partition which is not a part of a volume group.</p>
+<p>Since a physical volume cannot span over multiple drives, to span over more than one drive, create one or more physical volumes per drive.</p>
+<p>The volume groups can be divided into logical volumes, which are assigned mount points, such as /home and / and file system types, such as ext2 or ext3. When &ldquo;partitions&rdquo; reach their full capacity, free space from the volume group can be added to the logical volume to increase the size of the partition. When a new hard drive is added to the system, it can be added to the volume group, and partitions that are logical volumes can be increased in size.</p>
+<p>On the other hand, if a system is partitioned with the ext3 file system, the hard drive is divided into partitions of defined sizes. If a partition becomes full, it is not easy to expand the size of the partition. Even if the partition is moved to another hard drive, the original hard drive space has to be reallocated as a different partition or not used.</p>
+<h3 id="adding-two-new-hard-disk-to-the-system">Adding two new hard disk to the system<a hidden class="anchor" aria-hidden="true" href="#adding-two-new-hard-disk-to-the-system">#</a></h3>
+<ul>
+<li>
+<p><strong>nvme0n2</strong> (2 G)</p>
+</li>
+<li>
+<p><strong>nvme0n2</strong> (3 G)</p>
+</li>
+<li>
+<p>Verifying it if its detechted by the system</p>
+<ul>
+<li>
+<pre tabindex="0"><code># lsblk 
+NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                11:0    1  7.9G  0 rom  /dvd
+nvme0n1           259:0    0  100G  0 disk 
+├─nvme0n1p1       259:1    0    1G  0 part /boot
+└─nvme0n1p2       259:2    0   99G  0 part 
+  ├─rhel_192-root 253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap 253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home 253:2    0 44.8G  0 lvm  /home
+nvme0n2           259:3    0    2G  0 disk 
+nvme0n3           259:4    0    3G  0 disk #
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<h3 id="formatting-these-partiontions">Formatting these partiontions:<a hidden class="anchor" aria-hidden="true" href="#formatting-these-partiontions">#</a></h3>
+<ul>
+<li>creating partition for <strong>/dev/nvme0n2</strong></li>
+</ul>
+<pre tabindex="0"><code># fdisk /dev/nvme0n2
+</code></pre><ul>
+<li>
+<p>Verifying it, we will see a partition <strong>nvme0n2p1</strong> for the <strong>nvme0n2</strong> hard disk</p>
+<pre tabindex="0"><code># lsblk 
+NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                11:0    1  7.9G  0 rom  /dvd
+nvme0n1           259:0    0  100G  0 disk 
+├─nvme0n1p1       259:1    0    1G  0 part /boot
+└─nvme0n1p2       259:2    0   99G  0 part 
+  ├─rhel_192-root 253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap 253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home 253:2    0 44.8G  0 lvm  /home
+nvme0n2           259:3    0    2G  0 disk 
+  └─nvme0n2p1       259:6    0    1K  0 part 
+nvme0n3           259:4    0    3G  0 disk 
+#
+</code></pre><ul>
+<li>creating partition for <strong>/dev/nvme0n3</strong>
+<pre tabindex="0"><code># fdisk /dev/nvme0n3
+</code></pre></li>
+<li>verifying it, we will see a new partition <strong>nvme0n3p1</strong> for the <strong>nvme0n3</strong> hard disk
+<pre tabindex="0"><code># lsblk 
+NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                11:0    1  7.9G  0 rom  /dvd
+nvme0n1           259:0    0  100G  0 disk 
+├─nvme0n1p1       259:1    0    1G  0 part /boot
+└─nvme0n1p2       259:2    0   99G  0 part 
+  ├─rhel_192-root 253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap 253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home 253:2    0 44.8G  0 lvm  /home
+nvme0n2           259:3    0    2G  0 disk 
+  └─nvme0n2p1       259:6    0    1K  0 part 
+nvme0n3           259:4    0    3G  0 disk 
+  └─nvme0n3p1       259:7    0    1K  0 part 
+#
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<h3 id="we-have-created-below-partitions-are-demoing-lvm-concept">We have created below partitions are demoing LVM concept<a hidden class="anchor" aria-hidden="true" href="#we-have-created-below-partitions-are-demoing-lvm-concept">#</a></h3>
+<ul>
+<li>We have created two partition
+<ul>
+<li><strong>nvme0n2</strong> at <em><strong>/dev/nvme0n2</strong></em> location</li>
+<li><strong>nvme0n3</strong> at <em><strong>/dev/nvme0n2</strong></em> location</li>
+</ul>
+</li>
+<li><em><strong>nvme0n2</strong></em> and <em><strong>nvme0n3</strong></em> are called as <strong>partions</strong></li>
+</ul>
+<h3 id="creating-physical-volume-for-devnvme0n2-and-devnvme0n2">Creating Physical Volume for <em><strong>/dev/nvme0n2</strong></em> and <em><strong>/dev/nvme0n2</strong></em><a hidden class="anchor" aria-hidden="true" href="#creating-physical-volume-for-devnvme0n2-and-devnvme0n2">#</a></h3>
+<ul>
+<li>
+<p>Creating <em><strong>pvcreate</strong></em> for <strong>/dev/nvme0n2</strong></p>
+<pre tabindex="0"><code># pvcreate /dev/nvme0n2
+Physical volume &#34;/dev/nvme0n2&#34; successfully created.
+</code></pre></li>
+<li>
+<p>Listing the <strong>/dev/nvme0n2</strong> using <em><strong>pvdisplay</strong></em></p>
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n2
+&#34;/dev/nvme0n2&#34; is a new physical volume of &#34;2.00 GiB&#34;
+--- NEW Physical volume ---
+PV Name               /dev/nvme0n2
+VG Name               
+PV Size               2.00 GiB
+Allocatable           NO  &lt;&lt;= no, its free
+PE Size               0   
+Total PE              0
+Free PE               0
+Allocated PE          0
+PV UUID               TsbM4f-gbcC-vloN-K1uJ-hbMP-uhFq-TVDxc2
+# 
+</code></pre></li>
+<li>
+<p>Creating <em><strong>pvcreate</strong></em> for <strong>/dev/nvme0n3</strong></p>
+<pre tabindex="0"><code># pvcreate /dev/nvme0n3
+Physical volume &#34;/dev/nvme0n3&#34; successfully created.
+</code></pre></li>
+<li>
+<p>Listing the <strong>/dev/nvme0n3</strong> using <em><strong>pvdisplay</strong></em></p>
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n3 
+&#34;/dev/nvme0n3&#34; is a new physical volume of &#34;3.00 GiB&#34;
+--- NEW Physical volume ---
+PV Name               /dev/nvme0n3
+VG Name               
+PV Size               3.00 GiB
+Allocatable           NO  &lt;&lt;= no, its free
+PE Size               0   
+Total PE              0
+Free PE               0
+Allocated PE          0
+PV UUID               e3lw33-BKMf-5bXU-Uhz8-vgIP-BDfo-tdkjf9
+#
+</code></pre></li>
+</ul>
+<h3 id="creating-volume-group-for-devnvme0n2-and-devnvme0n3">Creating Volume Group for <strong>/dev/nvme0n2</strong> and <strong>/dev/nvme0n3</strong><a hidden class="anchor" aria-hidden="true" href="#creating-volume-group-for-devnvme0n2-and-devnvme0n3">#</a></h3>
+<ul>
+<li>
+<p>Listing all the <em><strong>vgdisplay</strong></em></p>
+<pre tabindex="0"><code># vgdisplay 
+--- Volume group ---
+VG Name               rhel_192
+System ID             
+Format                lvm2
+Metadata Areas        1
+Metadata Sequence No  4
+VG Access             read/write
+VG Status             resizable
+MAX LV                0
+Cur LV                3
+Open LV               3
+Max PV                0
+Cur PV                1
+Act PV                1
+VG Size               &lt;99.00 GiB
+PE Size               4.00 MiB
+Total PE              25343
+Alloc PE / Size       25343 / &lt;99.00 GiB
+Free  PE / Size       0 / 0   
+VG UUID               IWXt27-SjOw-vKwc-0dHJ-GzgJ-TDLx-LcYE64
+#
+</code></pre></li>
+<li>
+<p>Creating <em><strong>vgcreate</strong></em> for <strong>/dev/nvme0n2</strong> and <strong>/dev/nvme0n3</strong> physical volume</p>
+<pre tabindex="0"><code># vgcreate rasrivas_vg /dev/nvme0n2 /dev/nvme0n3
+Volume group &#34;rasrivas_vg&#34; successfully created
+#
+</code></pre></li>
+<li>
+<p>Listing <em><strong>vgdisplay</strong></em> for <em><strong>rasrivas_vg</strong></em></p>
+<pre tabindex="0"><code># vgdisplay rasrivas_vg
+--- Volume group ---
+VG Name               rasrivas_vg
+System ID             
+Format                lvm2
+Metadata Areas        2
+Metadata Sequence No  1
+VG Access             read/write
+VG Status             resizable
+MAX LV                0
+Cur LV                0
+Open LV               0
+Max PV                0
+Cur PV                2
+Act PV                2
+VG Size               4.99 GiB
+PE Size               4.00 MiB
+Total PE              1278
+Alloc PE / Size       0 / 0   
+Free  PE / Size       1278 / 4.99 GiB
+VG UUID               G9mXOZ-fEwq-SqQ5-sGXN-Kfac-n7Zb-Tp9euu
+#
+</code></pre></li>
+<li>
+<p>Listing <em><strong>pvdisplay</strong></em> for <strong>/dev/nvme0n3</strong></p>
+<ul>
+<li>we will see <strong>rasrivas_vg</strong> volume group is attached to <strong>/dev/nvme0n3</strong> physical volume
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n3 
+--- Physical volume ---
+PV Name               /dev/nvme0n3
+VG Name               rasrivas_vg &lt;&lt;= this pv is attached this
+PV Size               3.00 GiB / not usable 4.00 MiB
+Allocatable           yes 
+PE Size               4.00 MiB
+Total PE              767
+Free PE               767
+Allocated PE          0
+PV UUID               e3lw33-BKMf-5bXU-Uhz8-vgIP-BDfo-tdkjf9
+#
+</code></pre></li>
+<li>we will see <strong>rasrivas_vg</strong> volume group is attached to <strong>/dev/nvme0n2</strong> physical volume
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n2 
+--- Physical volume ---
+PV Name               /dev/nvme0n2
+VG Name               rasrivas_vg  &lt;&lt;= this pv is attached this
+PV Size               2.00 GiB / not usable 4.00 MiB
+Allocatable           yes 
+PE Size               4.00 MiB
+Total PE              511
+Free PE               511
+Allocated PE          0
+PV UUID               TsbM4f-gbcC-vloN-K1uJ-hbMP-uhFq-TVDxc2
+#
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<h3 id="creating-logical-volume-for-the-rasrivas_vg-volume-group">Creating Logical Volume for the &ldquo;rasrivas_vg&rdquo; Volume Group<a hidden class="anchor" aria-hidden="true" href="#creating-logical-volume-for-the-rasrivas_vg-volume-group">#</a></h3>
+<ul>
+<li>
+<p>Creating logical volume</p>
+<pre tabindex="0"><code># lvcreate --size 4G --name rasrivas_lv rasrivas_vg
+Logical volume &#34;rasrivas_lv&#34; created.
+``
+</code></pre></li>
+<li>
+<p>Listing the logical volume</p>
+<pre tabindex="0"><code># lvdisplay  rasrivas_vg/rasrivas_lv
+--- Logical volume ---
+LV Path                /dev/rasrivas_vg/rasrivas_lv &lt;&lt;= partition name
+LV Name                rasrivas_lv
+VG Name                rasrivas_vg
+LV UUID                SPjPL2-hTsh-ytUD-GOwP-iwCz-YT1A-HtJjr8
+LV Write Access        read/write
+LV Creation host, time 192.168.53.143, 2020-05-31 22:16:52 +0530
+LV Status              available
+# open                 0
+LV Size                4.00 GiB
+Current LE             1024
+Segments               2
+Allocation             inherit
+Read ahead sectors     auto
+- currently set to     8192
+Block device           253:3
+#
+</code></pre></li>
+</ul>
+<h3 id="formatting-the-devrasrivas_vgrasrivas_lv-partition-logical-volume">Formatting the /dev/rasrivas_vg/rasrivas_lv partition (logical volume)<a hidden class="anchor" aria-hidden="true" href="#formatting-the-devrasrivas_vgrasrivas_lv-partition-logical-volume">#</a></h3>
+<ul>
+<li>Formatting the partition
+<pre tabindex="0"><code># mkfs.ext4 /dev/rasrivas_vg/rasrivas_lv
+mke2fs 1.45.4 (23-Sep-2019)
+Creating filesystem with 1048576 4k blocks and 262144 inodes
+Filesystem UUID: 4573229e-20f4-4bf1-822d-2958d5eeaeb5
+Superblock backups stored on blocks: 
+  32768, 98304, 163840, 229376, 294912, 819200, 884736
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done 
+</code></pre></li>
+</ul>
+<h3 id="mounting-the-devrasrivas_vgrasrivas_lv-partition-logical-volume">Mounting the /dev/rasrivas_vg/rasrivas_lv partition (logical volume)<a hidden class="anchor" aria-hidden="true" href="#mounting-the-devrasrivas_vgrasrivas_lv-partition-logical-volume">#</a></h3>
+<ul>
+<li>
+<p>Creating a directroy where to be mounted
+<code># mkdir rasrivas_mp</code></p>
+</li>
+<li>
+<p>Mounting the partition</p>
+<pre tabindex="0"><code># mount /dev/rasrivas_vg/rasrivas_lv rasrivas_mp
+#
+</code></pre></li>
+<li>
+<p>Verifying the mounted partition</p>
+<pre tabindex="0"><code># lsblk 
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                        11:0    1  7.9G  0 rom  
+nvme0n1                   259:0    0  100G  0 disk 
+├─nvme0n1p1               259:1    0    1G  0 part /boot
+└─nvme0n1p2               259:2    0   99G  0 part 
+  ├─rhel_192-root         253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap         253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home         253:2    0 44.8G  0 lvm  /home
+nvme0n2                   259:3    0    2G  0 disk 
+└─rasrivas_vg-rasrivas_lv 253:3    0    4G  0 lvm  /root/rasrivas_mp
+nvme0n3                   259:4    0    3G  0 disk 
+└─rasrivas_vg-rasrivas_lv 253:3    0    4G  0 lvm  /root/rasrivas_mp
+# 
+</code></pre><pre tabindex="0"><code># df -h
+Filesystem                           Size  Used Avail Use% Mounted on
+devtmpfs                             2.1G     0  2.1G   0% /dev
+tmpfs                                2.1G     0  2.1G   0% /dev/shm
+tmpfs                                2.1G  9.7M  2.1G   1% /run
+tmpfs                                2.1G     0  2.1G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root             50G  4.6G   46G  10% /
+/dev/mapper/rhel_192-home             45G  352M   45G   1% /home 
+/dev/nvme0n1p1                      1014M  211M  804M  21% /boot
+tmpfs                                420M  1.2M  419M   1% /run/user/42
+tmpfs                                420M  4.0K  420M   1% /run/user/0
+/dev/mapper/rasrivas_vg-rasrivas_lv  3.9G   16M  3.7G   1% /root/rasrivas_mp
+# 
+</code></pre><pre tabindex="0"><code># ls -l /dev/mapper/rasrivas_vg-rasrivas_lv
+lrwxrwxrwx. 1 root root 7 May 31 22:19 /dev/mapper/rasrivas_vg-rasrivas_lv -&gt; ../dm-3
+# 
+</code></pre></li>
+</ul>
+<h3 id="if-we-want-to-increasedecrease-storage-for-the-entire-partition-then-we-can-ask-logical-group">If we want to increase/decrease storage for the entire partition then we can ask Logical Group<a hidden class="anchor" aria-hidden="true" href="#if-we-want-to-increasedecrease-storage-for-the-entire-partition-then-we-can-ask-logical-group">#</a></h3>
+<ul>
+<li>
+<p><strong>NOTE</strong></p>
+<ul>
+<li>We can only increase the size of the *<em><strong>Logical Group</strong></em> if <strong>Volume Group</strong> has space available
+<ul>
+<li>otherwise we need tp follow below steps:
+<ul>
+<li>*<strong>Firstly</strong> we need to increase the size of the <strong>Volume Group</strong> by adding more <strong>Physical Volome</strong></li>
+<li><em><strong>Secondly</strong></em> then we can increse the size of the *<em><strong>Logical Group</strong></em></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Checking the current size for the <strong>/dev/mapper/rasrivas_vg-rasrivas_lv</strong> filesystem using <strong>df -hT</strong> command</p>
+<ul>
+<li>It will show its having <strong>3.9G</strong> capacity (<strong>Maximum Size</strong>)
+<pre tabindex="0"><code># df -hT
+Filesystem                          Type      Size  Used Avail Use% Mounted on
+devtmpfs                            devtmpfs  2.1G     0  2.1G   0% /dev
+tmpfs                               tmpfs     2.1G     0  2.1G   0% /dev/shm
+tmpfs                               tmpfs     2.1G  9.7M  2.1G   1% /run
+tmpfs                               tmpfs     2.1G     0  2.1G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root           xfs        50G  4.6G   46G  10% /
+/dev/mapper/rhel_192-home           xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                      xfs      1014M  211M  804M  21% /boot
+tmpfs                               tmpfs     420M  1.2M  419M   1% /run/user/42
+tmpfs                               tmpfs     420M  4.0K  420M   1% /run/user/0
+/dev/mapper/rasrivas_vg-rasrivas_lv ext4      3.9G   16M  3.7G   1% /root/rasrivas_mp
+#
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>Now, Increasing the partition size to 500M</p>
+<pre tabindex="0"><code># lvextend --size +500M /dev/mapper/rasrivas_vg-rasrivas_lv
+Size of logical volume rasrivas_vg/rasrivas_lv changed from 4.00 GiB (1024 extents) to &lt;4.49 GiB (1149 extents).
+Logical volume rasrivas_vg/rasrivas_lv successfully resized.
+# 
+</code></pre></li>
+<li>
+<p>If we again see the for the <strong>/dev/mapper/rasrivas_vg-rasrivas_lv</strong> filesystem using <strong>df -hT</strong> command</p>
+<ul>
+<li>Again, it will show its having <strong>3.9G</strong> capacity (<strong>Maximum Size</strong>) because we need to <em><strong>format</strong></em> the partition again.
+<ul>
+<li><strong>Reasons</strong>
+<ul>
+<li><em><strong>df</strong></em> command only shows the size which is formated</li>
+</ul>
+</li>
+</ul>
+<pre tabindex="0"><code># df -hT
+Filesystem                          Type      Size  Used Avail Use% Mounted on
+devtmpfs                            devtmpfs  2.1G     0  2.1G   0% /dev
+tmpfs                               tmpfs     2.1G     0  2.1G   0% /dev/shm
+tmpfs                               tmpfs     2.1G  9.7M  2.1G   1% /run
+tmpfs                               tmpfs     2.1G     0  2.1G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root           xfs        50G  4.6G   46G  10% /
+/dev/mapper/rhel_192-home           xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                      xfs      1014M  211M  804M  21% /boot
+tmpfs                               tmpfs     420M  1.2M  419M   1% /run/user/42
+tmpfs                               tmpfs     420M  4.0K  420M   1% /run/user/0
+/dev/mapper/rasrivas_vg-rasrivas_lv ext4      3.9G   16M  3.7G   1% /root/rasrivas_mp
+#
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<h3 id="formatting-the-partition">Formatting the partition<a hidden class="anchor" aria-hidden="true" href="#formatting-the-partition">#</a></h3>
+<ul>
+<li>If we use below command, it will fisrt delete the data in this partition and then it will format
+<code># mkfs.ext4 /dev/rasrivas_vg/rasrivas_lv</code></li>
+<li>We dont want to loose our old data, to overcome this situation, we use <em><strong>resize2fs</strong></em> command
+<ul>
+<li><strong><strong>resize2fs</strong></strong> command is used to format the remaining without loosing the old data of same partition</li>
+</ul>
+</li>
+<li>Formatting the partition using <em><strong>resize2fs</strong></em> command
+<pre tabindex="0"><code># resize2fs /dev/rasrivas_vg/rasrivas_lv
+resize2fs 1.45.4 (23-Sep-2019)
+Filesystem at /dev/rasrivas_vg/rasrivas_lv is mounted on /root/rasrivas_mp; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/rasrivas_vg/rasrivas_lv is now 1176576 (4k) blocks long.
+</code></pre></li>
+<li>Now, if we check the size for the <strong>/dev/rasrivas_vg/rasrivas_lv</strong> partition, it will be increased to <strong>500M</strong> and will be <strong>4.4G</strong>
+<pre tabindex="0"><code># df -hT
+Filesystem                          Type      Size  Used Avail Use% Mounted on
+devtmpfs                            devtmpfs  2.1G     0  2.1G   0% /dev
+tmpfs                               tmpfs     2.1G     0  2.1G   0% /dev/shm
+tmpfs                               tmpfs     2.1G  9.7M  2.1G   1% /run
+tmpfs                               tmpfs     2.1G     0  2.1G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root           xfs        50G  4.6G   46G  10% /
+/dev/mapper/rhel_192-home           xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                      xfs      1014M  211M  804M  21% /boot
+tmpfs                               tmpfs     420M  1.2M  419M   1% /run/user/42
+tmpfs                               tmpfs     420M  4.0K  420M   1% /run/user/0
+/dev/mapper/rasrivas_vg-rasrivas_lv ext4      4.4G   16M  4.2G   1% /root/rasrivas_mp
+#
+</code></pre></li>
+</ul>
+<h3 id="increating-the-size-for-the-volume-group">Increating the size for the Volume Group<a hidden class="anchor" aria-hidden="true" href="#increating-the-size-for-the-volume-group">#</a></h3>
+<ul>
+<li>
+<p>We can only increase the size of the *<em><strong>Logical Group</strong></em> if <strong>Volume Group</strong> has space available</p>
+<ul>
+<li>otherwise we need tp follow below steps:
+<ul>
+<li>*<strong>Firstly</strong> we need to increase the size of the <strong>Volume Group</strong> by adding more <strong>Physical Volome</strong></li>
+<li><em><strong>Secondly</strong></em> then we can increse the size of the *<em><strong>Logical Group</strong></em></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Creating <em><strong>Physical Volume</strong></em> for <strong>/dev/nvme0n4</strong> partition which if of <strong>2Gib</strong> size</p>
+<pre tabindex="0"><code># pvcreate /dev/nvme0n4 
+Physical volume &#34;/dev/nvme0n4&#34; successfully created.
+#
+</code></pre></li>
+<li>
+<p>Verifying if <strong>/dev/nvme0n4</strong> is created</p>
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n4
+&#34;/dev/nvme0n4&#34; is a new physical volume of &#34;2.00 GiB&#34;
+--- NEW Physical volume ---
+PV Name               /dev/nvme0n4
+VG Name               
+PV Size               2.00 GiB
+Allocatable           NO
+PE Size               0   
+Total PE              0
+Free PE               0
+Allocated PE          0
+PV UUID               8EXbjv-q8SP-ROG3-RqHq-y1ES-D16q-a3dR3I
+#
+</code></pre></li>
+<li>
+<p>Now, we will increase the *<strong>Volume Group</strong> size by using <strong>vgextend</strong> command</p>
+<pre tabindex="0"><code># vgextend rasrivas_vg /dev/nvme0n4
+Volume group &#34;rasrivas_vg&#34; successfully extended
+#
+</code></pre></li>
+<li>
+<p>Verifying if the size for the <strong>rasrivas_vg</strong>, it should be **4.99 + 2 = 6.99 GiB</p>
+<pre tabindex="0"><code># vgdisplay rasrivas_vg
+--- Volume group ---
+VG Name               rasrivas_vg
+System ID             
+Format                lvm2
+Metadata Areas        3
+Metadata Sequence No  4
+VG Access             read/write
+VG Status             resizable
+MAX LV                0
+Cur LV                1
+Open LV               0
+Max PV                0
+Cur PV                3
+Act PV                3
+VG Size               &lt;6.99 GiB  &lt;&lt;&lt;== this has been extended to 2 Gib as it was having size of 2 Gib
+PE Size               4.00 MiB
+Total PE              1789
+Alloc PE / Size       1149 / &lt;4.49 GiB
+Free  PE / Size       640 / 2.50 GiB
+VG UUID               G9mXOZ-fEwq-SqQ5-sGXN-Kfac-n7Zb-Tp9euu
+#
+</code></pre></li>
+</ul>
+<h3 id="decreasing-the-size-of-the-logical-volume-but-first-we-create-the-logical-volume-from-the-scratch">Decreasing the size of the Logical Volume but first we create the Logical Volume from the scratch<a hidden class="anchor" aria-hidden="true" href="#decreasing-the-size-of-the-logical-volume-but-first-we-create-the-logical-volume-from-the-scratch">#</a></h3>
+<ul>
+<li>
+<p>Adding two new hard disk of size</p>
+<ul>
+<li>
+<p><strong>nvme0n2</strong> (5 G)</p>
+</li>
+<li>
+<p><strong>nvme0n2</strong> (5 G)</p>
+</li>
+<li>
+<pre tabindex="0"><code># lsblk 
+NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                11:0    1  7.9G  0 rom  /dvd
+nvme0n1           259:0    0  100G  0 disk 
+├─nvme0n1p1       259:1    0    1G  0 part /boot
+└─nvme0n1p2       259:2    0   99G  0 part 
+  ├─rhel_192-root 253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap 253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home 253:2    0 44.8G  0 lvm  /home
+nvme0n2           259:3    0    5G  0 disk 
+nvme0n3           259:4    0    5G  0 disk #
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>Now, formatting these partiontions:</p>
+<ul>
+<li>creating partition for <strong>/dev/nvme0n2</strong></li>
+</ul>
+<pre tabindex="0"><code>[root@rasrivas ~]# fdisk /dev/nvme0n2
+
+Welcome to fdisk (util-linux 2.32.1).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table.
+Created a new DOS disklabel with disk identifier 0x193c523e.
+
+Command (m for help): n
+Partition type
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended (container for logical partitions)
+Select (default p): e
+Partition number (1-4, default 1): 
+First sector (2048-10485759, default 2048): 
+Last sector, +sectors or +size{K,M,G,T,P} (2048-10485759, default 10485759): 
+
+Created a new partition 1 of type &#39;Extended&#39; and of size 5 GiB.
+
+Command (m for help): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+#
+</code></pre></li>
+<li>
+<p>Verifying it, we will see a partition <strong>nvme0n2p1</strong> for the <strong>nvme0n2</strong> hard disk</p>
+<pre tabindex="0"><code>[root@rasrivas ~]# lsblk 
+NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                11:0    1  7.9G  0 rom  /dvd
+nvme0n1           259:0    0  100G  0 disk 
+├─nvme0n1p1       259:1    0    1G  0 part /boot
+└─nvme0n1p2       259:2    0   99G  0 part 
+  ├─rhel_192-root 253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap 253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home 253:2    0 44.8G  0 lvm  /home
+nvme0n2           259:3    0    5G  0 disk 
+  └─nvme0n2p1       259:6    0    1K  0 part 
+nvme0n3           259:4    0    5G  0 disk 
+#
+</code></pre><ul>
+<li>creating partition for <strong>/dev/nvme0n3</strong>
+<pre tabindex="0"><code># fdisk /dev/nvme0n3
+
+Welcome to fdisk (util-linux 2.32.1).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table.
+Created a new DOS disklabel with disk identifier 0xe5ec6e43.
+
+Command (m for help): n
+Partition type
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended (container for logical partitions)
+Select (default p): e
+Partition number (1-4, default 1): 
+First sector (2048-10485759, default 2048): 
+Last sector, +sectors or +size{K,M,G,T,P} (2048-10485759, default 10485759): 
+
+Created a new partition 1 of type &#39;Extended&#39; and of size 5 GiB.
+
+Command (m for help): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+#
+</code></pre></li>
+<li>verifying it, we will see a new partition <strong>nvme0n3p1</strong> for the <strong>nvme0n3</strong> hard disk
+<pre tabindex="0"><code>[root@rasrivas ~]# lsblk 
+NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                11:0    1  7.9G  0 rom  /dvd
+nvme0n1           259:0    0  100G  0 disk 
+├─nvme0n1p1       259:1    0    1G  0 part /boot
+└─nvme0n1p2       259:2    0   99G  0 part 
+  ├─rhel_192-root 253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap 253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home 253:2    0 44.8G  0 lvm  /home
+nvme0n2           259:3    0    5G  0 disk 
+  └─nvme0n2p1       259:6    0    1K  0 part 
+nvme0n3           259:4    0    5G  0 disk 
+  └─nvme0n3p1       259:7    0    1K  0 part 
+#
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>Creating <strong>Physical Volume</strong> for the <strong>/dev/nvme0n2</strong> and <strong>/dev/nvme0n3</strong></p>
+<pre tabindex="0"><code>[root@rasrivas ~]# pvcreate /dev/nvme0n2
+WARNING: dos signature detected on /dev/nvme0n2 at offset 510. Wipe it? [y/n]: y
+Wiping dos signature on /dev/nvme0n2.
+Physical volume &#34;/dev/nvme0n2&#34; successfully created.
+</code></pre><pre tabindex="0"><code>[root@rasrivas ~]# pvcreate /dev/nvme0n3
+WARNING: dos signature detected on /dev/nvme0n3 at offset 510. Wipe it? [y/n]: y
+Wiping dos signature on /dev/nvme0n3.
+Physical volume &#34;/dev/nvme0n3&#34; successfully created.
+#
+</code></pre><ul>
+<li>
+<p>verifying it using <em><strong>pvdisplay</strong></em></p>
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n2
+&#34;/dev/nvme0n2&#34; is a new physical volume of &#34;5.00 GiB&#34;
+--- NEW Physical volume ---
+PV Name               /dev/nvme0n2
+VG Name               
+PV Size               5.00 GiB
+Allocatable           NO
+PE Size               0   
+Total PE              0
+Free PE               0
+Allocated PE          0
+PV UUID               G7hzUX-cqXS-A9v1-9VaS-k4Yl-ZEUd-Klj9RL
+</code></pre><pre tabindex="0"><code># pvdisplay /dev/nvme0n3
+&#34;/dev/nvme0n3&#34; is a new physical volume of &#34;5.00 GiB&#34;
+--- NEW Physical volume ---
+PV Name               /dev/nvme0n3
+VG Name               
+PV Size               5.00 GiB
+Allocatable           NO
+PE Size               0   
+Total PE              0
+Free PE               0
+Allocated PE          0
+PV UUID               d4XYBS-3HMS-MURj-0EvE-NceI-24ns-lzoPIh
+#
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>Creating <strong>Volume Group</strong> for the <strong>/dev/nvme0n2</strong> and <strong>/dev/nvme0n3</strong></p>
+<ul>
+<li>
+<p>creating <strong>Volume Group</strong></p>
+<pre tabindex="0"><code># vgcreate mydemovg /dev/nvme0n2 /dev/nvme0n3
+Volume group &#34;mydemovg&#34; successfully created
+#
+</code></pre></li>
+<li>
+<p>verifying <em><strong>volume group</strong></em> for the <strong>mydemovg</strong>, it should around <strong>10 GB</strong> space and available <em><strong>PV count</strong></em> should be <strong>2</strong></p>
+<pre tabindex="0"><code>[root@rasrivas ~]# vgdisplay mydemovg
+--- Volume group ---
+VG Name               mydemovg
+System ID             
+Format                lvm2
+Metadata Areas        2
+Metadata Sequence No  1
+VG Access             read/write
+VG Status             resizable
+MAX LV                0
+Cur LV                0
+Open LV               0
+Max PV                0
+Cur PV                2
+Act PV                2
+VG Size               9.99 GiB
+PE Size               4.00 MiB
+Total PE              2558
+Alloc PE / Size       0 / 0   
+Free  PE / Size       2558 / 9.99 GiB
+VG UUID               KlvYYf-tlSb-Jd0p-d6sr-ORAO-MEPD-q0QM5G
+#
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>Now, now finally creating <em><strong>logical volume</strong></em></p>
+<ul>
+<li>creating a LV of 7 GB size
+<pre tabindex="0"><code># lvcreate --size 7G --name mydemolv mydemovg
+WARNING: dos signature detected on /dev/mydemovg/mydemolv at offset 510. Wipe it? [y/n]: y
+Wiping dos signature on /dev/mydemovg/mydemolv.
+Logical volume &#34;mydemolv&#34; created.
+#
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>verifying it</p>
+<pre tabindex="0"><code># lvdisplay 
+--- Logical volume ---
+LV Path                /dev/mydemovg/mydemolv
+LV Name                mydemolv
+VG Name                mydemovg
+LV UUID                aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG
+LV Write Access        read/write
+LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530
+LV Status              available
+# open                 0
+LV Size                7.00 GiB
+Current LE             1792
+Segments               2
+Allocation             inherit
+Read ahead sectors     auto
+- currently set to     8192
+Block device           253:3
+</code></pre></li>
+<li>
+<p>Now, we will format this partition</p>
+<pre tabindex="0"><code>[root@rasrivas ~]# mkfs.ext4 /dev/mydemovg/mydemolv
+mke2fs 1.45.4 (23-Sep-2019)
+Creating filesystem with 1835008 4k blocks and 458752 inodes
+Filesystem UUID: fe2bf001-7323-4f9c-a00e-525f12ed6098
+Superblock backups stored on blocks: 
+  32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done 
+#
+</code></pre></li>
+<li>
+<p>Now, mounting this partition</p>
+<pre tabindex="0"><code># mkdir mydemodirectory
+# ls -la mydemodirectory
+total 4
+drwxr-xr-x.  2 root root    6 Jul 11 16:41 .
+dr-xr-x---. 26 root root 4096 Jul 11 16:41 ..
+#
+</code></pre><pre tabindex="0"><code># mount /dev/mydemovg/mydemolv mydemodirectory
+#
+</code></pre><ul>
+<li>verfiying it</li>
+</ul>
+<pre tabindex="0"><code># lsblk 
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                  11:0    1  7.9G  0 rom  /dvd
+nvme0n1             259:0    0  100G  0 disk 
+├─nvme0n1p1         259:1    0    1G  0 part /boot
+└─nvme0n1p2         259:2    0   99G  0 part 
+  ├─rhel_192-root   253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap   253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home   253:2    0 44.8G  0 lvm  /home
+nvme0n2             259:3    0    5G  0 disk 
+└─mydemovg-mydemolv 253:3    0    7G  0 lvm  /root/mydemodirectory
+nvme0n3             259:4    0    5G  0 disk 
+└─mydemovg-mydemolv 253:3    0    7G  0 lvm  /root/mydemodirectory
+#
+</code></pre></li>
+</ul>
+<h3 id="now-we-will-decrease-the-size-the-logical-volume">Now, we will decrease the size the <strong>Logical Volume</strong><a hidden class="anchor" aria-hidden="true" href="#now-we-will-decrease-the-size-the-logical-volume">#</a></h3>
+<ul>
+<li>There are five steps:
+<ul>
+<li>Offline (Umonut )the partition</li>
+<li>Clean/Scan the partition &ndash;&gt;</li>
+<li>Reformat</li>
+<li>LV reduce</li>
+<li>Online (Mount)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Step1:</strong> Offline (Umonut) the partition</p>
+<ul>
+<li>
+<p>Listing the existing partitions <strong>/dev/mapper/mydemovg-mydemolv</strong> which is mounted at <strong>/root/mydemodirectory</strong> location</p>
+<pre tabindex="0"><code># df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+devtmpfs                      devtmpfs  1.6G     0  1.6G   0% /dev
+tmpfs                         tmpfs     1.6G  4.0K  1.6G   1% /dev/shm
+tmpfs                         tmpfs     1.6G  9.7M  1.6G   1% /run
+tmpfs                         tmpfs     1.6G     0  1.6G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root     xfs        50G  9.9G   41G  20% /
+/dev/mapper/rhel_192-home     xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                xfs      1014M  211M  804M  21% /boot
+/dev/sr0                      iso9660   7.9G  7.9G     0 100% /dvd
+tmpfs                         tmpfs     316M  1.2M  315M   1% /run/user/42
+tmpfs                         tmpfs     316M  4.0K  316M   1% /run/user/0
+/dev/mapper/mydemovg-mydemolv ext4      6.9G   32M  6.5G   1% /root/mydemodirectory
+#
+</code></pre></li>
+<li>
+<p>Unmonting the partitons, which is also called making this partition as <strong>OFFLINE</strong></p>
+<pre tabindex="0"><code># umount /root/mydemodirectory
+#
+</code></pre></li>
+<li>
+<p>Verifying it</p>
+<pre tabindex="0"><code># df -hT
+Filesystem                Type      Size  Used Avail Use% Mounted on
+devtmpfs                  devtmpfs  1.6G     0  1.6G   0% /dev
+tmpfs                     tmpfs     1.6G  4.0K  1.6G   1% /dev/shm
+tmpfs                     tmpfs     1.6G  9.7M  1.6G   1% /run
+tmpfs                     tmpfs     1.6G     0  1.6G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root xfs        50G  9.9G   41G  20% /
+/dev/mapper/rhel_192-home xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1            xfs      1014M  211M  804M  21% /boot
+/dev/sr0                  iso9660   7.9G  7.9G     0 100% /dvd
+tmpfs                     tmpfs     316M  1.2M  315M   1% /run/user/42
+tmpfs                     tmpfs     316M  4.0K  316M   1% /run/user/0
+# 
+</code></pre></li>
+</ul>
+<p><strong>Step2:</strong> Scan and Clean the Filesystem</p>
+<ul>
+<li>
+<p>Scanning and cleaning the <strong>/dev/mapper/mydemovg-mydemolv</strong> Filesystem using <strong>e2fsck</strong> command</p>
+<ul>
+<li>This will check all the bad/ corrupt sectors for this Filesystem</li>
+</ul>
+<pre tabindex="0"><code># e2fsck -f /dev/mapper/mydemovg-mydemolv
+e2fsck 1.45.4 (23-Sep-2019)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+/dev/mapper/mydemovg-mydemolv: 11/458752 files (0.0% non-contiguous), 53247/1835008 blocks
+#
+</code></pre></li>
+</ul>
+<p><strong>Step3:</strong> Reformat the Filesystem to reduce the size</p>
+<ul>
+<li>
+<p>Now, we can want to reduce the size to 6G</p>
+</li>
+<li>
+<p>For this we need to online format it</p>
+</li>
+<li>
+<p>Reormatting it to reduce the size to 6G</p>
+<pre tabindex="0"><code># resize2fs /dev/mapper/mydemovg-mydemolv 6G
+resize2fs 1.45.4 (23-Sep-2019)
+Resizing the filesystem on /dev/mapper/mydemovg-mydemolv to 1572864 (4k) blocks.
+The filesystem on /dev/mapper/mydemovg-mydemolv is now 1572864 (4k) blocks long.
+#
+</code></pre></li>
+<li>
+<p>Now, we check the partition size it wil still show 7G</p>
+<pre tabindex="0"><code># lvdisplay 
+--- Logical volume ---
+LV Path                /dev/mydemovg/mydemolv
+LV Name                mydemolv
+VG Name                mydemovg
+LV UUID                aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG
+LV Write Access        read/write
+LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530
+LV Status              available
+# open                 0
+LV Size                7.00 GiB
+Current LE             1792
+Segments               2
+Allocation             inherit
+Read ahead sectors     auto
+- currently set to     8192
+Block device           253:3
+</code></pre></li>
+</ul>
+<p><strong>Step4:</strong> Reduce the size</p>
+<ul>
+<li>
+<p>Reducing the size for the LV</p>
+<ul>
+<li>it can be using by two commands
+<ul>
+<li>lvreduce &ndash;size -1G /dev/mydemovg/mydemolv</li>
+<li>lvreduce &ndash;size 6G /dev/mydemovg/mydemolv</li>
+</ul>
+</li>
+<li>Reducing it
+<pre tabindex="0"><code># lvreduce --size 6G /dev/mydemovg/mydemolv
+WARNING: Reducing active logical volume to 6.00 GiB.
+THIS MAY DESTROY YOUR DATA (filesystem etc.)
+Do you really want to reduce mydemovg/mydemolv? [y/n]: y
+Size of logical volume mydemovg/mydemolv changed from 7.00 GiB (1792 extents) to 6.00 GiB (1536 extents).
+Logical volume mydemovg/mydemolv successfully resized.
+#
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>verifying it, it should be now <strong>6.00 GiB</strong></p>
+<pre tabindex="0"><code># lvdisplay 
+--- Logical volume ---
+LV Path                /dev/mydemovg/mydemolv
+LV Name                mydemolv
+VG Name                mydemovg
+LV UUID                aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG
+LV Write Access        read/write
+LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530
+LV Status              available
+# open                 0
+LV Size                6.00 GiB
+Current LE             1536
+Segments               2
+Allocation             inherit
+Read ahead sectors     auto
+- currently set to     8192
+Block device           253:3
+</code></pre></li>
+<li>
+<p>now, we can see around <strong>3.99 GiB</strong> is free in the VG</p>
+<pre tabindex="0"><code># vgdisplay mydemovg
+--- Volume group ---
+VG Name               mydemovg
+System ID             
+Format                lvm2
+Metadata Areas        2
+Metadata Sequence No  3
+VG Access             read/write
+VG Status             resizable
+MAX LV                0
+Cur LV                1
+Open LV               0
+Max PV                0
+Cur PV                2
+Act PV                2
+VG Size               9.99 GiB
+PE Size               4.00 MiB
+Total PE              2558
+Alloc PE / Size       1536 / 6.00 GiB
+Free  PE / Size       1022 / 3.99 GiB
+VG UUID               KlvYYf-tlSb-Jd0p-d6sr-ORAO-MEPD-q0QM5G
+#
+</code></pre></li>
+</ul>
+<p><strong>Step5:</strong> mounting the partition</p>
+<ul>
+<li>
+<p>mounting it</p>
+<pre tabindex="0"><code># mount /dev/mydemovg/mydemolv mydemodirectory
+</code></pre></li>
+<li>
+<p>we can verify it</p>
+<pre tabindex="0"><code># df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+devtmpfs                      devtmpfs  1.6G     0  1.6G   0% /dev
+tmpfs                         tmpfs     1.6G  4.0K  1.6G   1% /dev/shm
+tmpfs                         tmpfs     1.6G  9.7M  1.6G   1% /run 
+tmpfs                         tmpfs     1.6G     0  1.6G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root     xfs        50G  9.9G   41G  20% /
+/dev/mapper/rhel_192-home     xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                xfs      1014M  211M  804M  21% /boot
+/dev/sr0                      iso9660   7.9G  7.9G     0 100% /dvd
+tmpfs                         tmpfs     316M  1.2M  315M   1% /run/user/42
+tmpfs                         tmpfs     316M  4.0K  316M   1% /run/user/0
+/dev/mapper/mydemovg-mydemolv ext4      5.9G   28M  5.6G   1% /root/mydemodirectory
+</code></pre></li>
+</ul>
+<h3 id="again-if-we-want-to-increase-the-size-of-the-lv">Again if we want to increase the size of the LV<a hidden class="anchor" aria-hidden="true" href="#again-if-we-want-to-increase-the-size-of-the-lv">#</a></h3>
+<pre tabindex="0"><code># lvextend --size +2G /dev/mydemovg/mydemolv
+Size of logical volume mydemovg/mydemolv changed from 6.00 GiB (1536 extents) to 8.00 GiB (2048 extents).
+Logical volume mydemovg/mydemolv successfully resized.
+</code></pre><ul>
+<li>now, we can see the size will be incresed by 2GB and total will be 8 GB</li>
+</ul>
+<pre tabindex="0"><code># lvdisplay 
+  --- Logical volume ---
+  LV Path                /dev/mydemovg/mydemolv
+  LV Name                mydemolv
+  VG Name                mydemovg
+  LV UUID                aT4ihP-15Vb-2nDl-jJaq-vduP-q7Xs-CwN0CG
+  LV Write Access        read/write
+  LV Creation host, time rasrivas.example.com, 2020-07-11 16:37:40 +0530
+  LV Status              available
+  # open                 1
+  LV Size                8.00 GiB
+  Current LE             2048
+  Segments               2
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:3
+</code></pre><ul>
+<li>
+<p>remount it</p>
+<pre tabindex="0"><code># resize2fs /dev/mydemovg/mydemolv
+resize2fs 1.45.4 (23-Sep-2019)
+Filesystem at /dev/mydemovg/mydemolv is mounted on /root/mydemodirectory; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/mydemovg/mydemolv is now 2097152 (4k) blocks long.
+</code></pre></li>
+<li>
+<p>we can verify it</p>
+<pre tabindex="0"><code># df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+devtmpfs                      devtmpfs  1.6G     0  1.6G   0% /dev
+tmpfs                         tmpfs     1.6G  4.0K  1.6G   1% /dev/shm
+tmpfs                         tmpfs     1.6G  9.7M  1.6G   1% /run
+tmpfs                         tmpfs     1.6G     0  1.6G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root     xfs        50G  9.9G   41G  20% /
+/dev/mapper/rhel_192-home     xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                xfs      1014M  211M  804M  21% /boot
+/dev/sr0                      iso9660   7.9G  7.9G     0 100% /dvd
+tmpfs                         tmpfs     316M  1.2M  315M   1% /run/user/42
+tmpfs                         tmpfs     316M  4.0K  316M   1% /run/user/0
+/dev/mapper/mydemovg-mydemolv ext4      7.9G   32M  7.4G   1% /root/mydemodirectory
+</code></pre></li>
+</ul>
+<h3 id="formatting-the-partition-for-xfs-format-type">Formatting the partition for &ldquo;xfs&rdquo; format type<a hidden class="anchor" aria-hidden="true" href="#formatting-the-partition-for-xfs-format-type">#</a></h3>
+<ul>
+<li>
+<p><strong>resize2fs</strong> only works for <em><strong>ext4</strong></em> format type</p>
+</li>
+<li>
+<p>For <strong>xfs</strong> format type, we have to use</p>
+<pre tabindex="0"><code># df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+devtmpfs                      devtmpfs  1.6G     0  1.6G   0% /dev  
+tmpfs                         tmpfs     1.6G  4.0K  1.6G   1% /dev/shm
+tmpfs                         tmpfs     1.6G  9.7M  1.6G   1% /run
+tmpfs                         tmpfs     1.6G     0  1.6G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root     xfs        50G  9.9G   41G  20% /
+/dev/mapper/rhel_192-home     xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                xfs      1014M  211M  804M  21% /boot
+/dev/sr0                      iso9660   7.9G  7.9G     0 100% /dvd
+tmpfs                         tmpfs     316M  1.2M  315M   1% /run/user/42
+tmpfs                         tmpfs     316M  4.0K  316M   1% /run/user/0
+/dev/mapper/mydemovg-mydemolv ext4      7.9G   32M  7.4G   1% /root/mydemodirectory
+#
+</code></pre></li>
+<li>
+<p>below is command for it</p>
+<pre tabindex="0"><code># xfs_growfs /dev/mapper/rhel_192-home
+meta-data=/dev/mapper/rhel_192-home isize=512    agcount=4, agsize=2934016 blks
+       =                       sectsz=512   attr=2, projid32bit=1
+       =                       crc=1        finobt=1, sparse=1, rmapbt=0
+       =                       reflink=1
+data     =                       bsize=4096   blocks=11736064, imaxpct=25
+       =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+log      =internal log           bsize=4096   blocks=5730, version=2
+       =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+</code></pre></li>
+</ul>
+<h3 id="extending-and-reducing-the-xfs-type-format">Extending and reducing the &ldquo;xfs&rdquo; type format<a hidden class="anchor" aria-hidden="true" href="#extending-and-reducing-the-xfs-type-format">#</a></h3>
+<ul>
+<li><strong>xfs</strong> format type which uses <strong>xfs_growfs</strong> command does not support for reduce of LVM (it only supports for extend)</li>
+</ul>
+<h3 id="size-type-provided-by-pv-and-vg">Size type provided by PV and VG<a hidden class="anchor" aria-hidden="true" href="#size-type-provided-by-pv-and-vg">#</a></h3>
+<ul>
+<li>
+<p>Size type provided by <strong>PV</strong> and <strong>VG</strong> are not in <strong>byte</strong> or <strong>sector</strong> type</p>
+</li>
+<li>
+<p>Its in form of <em><strong>PE Size</strong></em> for <strong>PV</strong> and <strong>LV</strong> and <em><strong>PE Size</strong></em> size is by default <strong>4.00 MiB</strong></p>
+</li>
+<li>
+<p>For example:</p>
+<pre tabindex="0"><code># pvdisplay /dev/nvme0n2
+--- Physical volume ---
+PV Name               /dev/nvme0n2
+VG Name               mydemovg
+PV Size               5.00 GiB / not usable 4.00 MiB
+Allocatable           yes (but full)
+PE Size               4.00 MiB
+Total PE              1279
+Free PE               0
+Allocated PE          1279
+PV UUID               G7hzUX-cqXS-A9v1-9VaS-k4Yl-ZEUd-Klj9RL
+</code></pre></li>
+<li>
+<p>here <strong>PE Size</strong> is <strong>4.00 MiB</strong> and total <strong>PE size</strong> is <strong>1279</strong></p>
+</li>
+<li>
+<p><strong>4.00 MiB</strong> * <strong>1279</strong> = <strong>5116 MiB</strong> OR <strong>5.00 GiB</strong></p>
+</li>
+<li>
+<p>This we are discussing because whenever we lv for which is not mulitple of 4 either will increse the size or decrease the size of its own</p>
+</li>
+<li>
+<p>In below example, we are going to create <strong>lv</strong> of <strong>10M</strong>, as its <em><strong>not multiple of 4</strong></em>, either will create <strong>8M</strong> or <strong>12M</strong></p>
+<pre tabindex="0"><code># lvcreate --size 10M --name demolv2 mydemovg
+Rounding up size to full physical extent 12.00 MiB
+Logical volume &#34;demolv2&#34; created.
+</code></pre></li>
+<li>
+<p>If we want to change the size of <strong>PE Size</strong>, we can use <code>$ vgcreate -s</code> OR <code>$ vgcreate -physicalextentsize</code> command</p>
+<pre tabindex="0"><code>$ man vgcreate
+ -s|--physicalextentsize Size[m|UNIT]
+            Sets the physical extent size of PVs in the VG.  The value must be either a power of 2 of at least 1
+            sector (where the sector size is the largest sector size of the PVs currently used in the VG), or at
+            least 128KiB.  Once this value has been set, it is difficult to change without recreating the VG,
+            unless no extents need moving.
+</code></pre></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://rasrivas.netlify.app/posts/partition_basics_1/">
+    <span class="title">Next Page »</span>
+    <br>
+    <span>Disk Partitioning in Linux</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Logical Volume Manager (LVM) in Linux on twitter"
+        href="https://twitter.com/intent/tweet/?text=Logical%20Volume%20Manager%20%28LVM%29%20in%20Linux&amp;url=https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f&amp;hashtags=">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Logical Volume Manager (LVM) in Linux on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f&amp;title=Logical%20Volume%20Manager%20%28LVM%29%20in%20Linux&amp;summary=Logical%20Volume%20Manager%20%28LVM%29%20in%20Linux&amp;source=https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Logical Volume Manager (LVM) in Linux on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f&title=Logical%20Volume%20Manager%20%28LVM%29%20in%20Linux">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Logical Volume Manager (LVM) in Linux on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Logical Volume Manager (LVM) in Linux on whatsapp"
+        href="https://api.whatsapp.com/send?text=Logical%20Volume%20Manager%20%28LVM%29%20in%20Linux%20-%20https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Logical Volume Manager (LVM) in Linux on telegram"
+        href="https://telegram.me/share/url?text=Logical%20Volume%20Manager%20%28LVM%29%20in%20Linux&amp;url=https%3a%2f%2frasrivas.netlify.app%2fposts%2fpartition_basics_2%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://rasrivas.netlify.app/">Rahul Srivastava Blog</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

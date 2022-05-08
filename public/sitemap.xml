@@ -2,34 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/categories/</loc>
+    <loc>https://rasrivas.netlify.app/posts/partition_basics_2/</loc>
+    <lastmod>2022-05-08T18:00:41+05:30</lastmod>
+  </url><url>
+    <loc>https://rasrivas.netlify.app/posts/</loc>
+    <lastmod>2022-05-08T18:00:41+05:30</lastmod>
+  </url><url>
+    <loc>https://rasrivas.netlify.app/</loc>
+    <lastmod>2022-05-08T18:00:41+05:30</lastmod>
+  </url><url>
+    <loc>https://rasrivas.netlify.app/categories/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/posts/partition_basics_1/</loc>
+    <loc>https://rasrivas.netlify.app/posts/partition_basics_1/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/tags/filesysystem/</loc>
+    <loc>https://rasrivas.netlify.app/tags/filesysystem/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/tags/linux/</loc>
+    <loc>https://rasrivas.netlify.app/tags/linux/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/categories/linux/</loc>
+    <loc>https://rasrivas.netlify.app/categories/linux/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/categories/operating-system/</loc>
+    <loc>https://rasrivas.netlify.app/categories/operating-system/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/tags/partition/</loc>
+    <loc>https://rasrivas.netlify.app/tags/partition/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/posts/</loc>
-    <lastmod>2022-05-08T17:05:08+05:30</lastmod>
-  </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/</loc>
-    <lastmod>2022-05-08T17:05:08+05:30</lastmod>
-  </url><url>
-    <loc>https://bespoke-dusk-39aa52.netlify.app/tags/</loc>
+    <loc>https://rasrivas.netlify.app/tags/</loc>
     <lastmod>2022-05-08T17:05:08+05:30</lastmod>
   </url>
 </urlset>
