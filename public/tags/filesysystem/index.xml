@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>filesysystem on Rahul Srivastava Blog</title>
+    <link>https://bespoke-dusk-39aa52.netlify.app/tags/filesysystem/</link>
+    <description>Recent content in filesysystem on Rahul Srivastava Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 08 May 2022 17:05:08 +0530</lastBuildDate><atom:link href="https://bespoke-dusk-39aa52.netlify.app/tags/filesysystem/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Disk Partitioning in Linux</title>
+      <link>https://bespoke-dusk-39aa52.netlify.app/posts/partition_basics_1/</link>
+      <pubDate>Sun, 08 May 2022 17:05:08 +0530</pubDate>
+      
+      <guid>https://bespoke-dusk-39aa52.netlify.app/posts/partition_basics_1/</guid>
+      <description>Disk Partitioning is the process of dividing a disk into one or more logical areas, often known as partitions, on which the user can work separately.
+It is one step of disk formatting. If a partition is created, the disk will store the information about the location and size of partitions in the partition table.
+With the partition table, each partition can appear to the operating system as a logical disk, and users can read and write data on those disks.</description>
+    </item>
+    
+  </channel>
+</rss>
