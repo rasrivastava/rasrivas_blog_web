@@ -1,20 +1,20 @@
 baseURL: "https://rasrivas.netlify.app/"
 languageCode: en-us
-title: Rahul Srivastava Blog
+title: Rahul Srivastava
 theme: PaperMod
 
 
 params:
     homeInfoParams:
-        Title: Hi there wave
-        Content: Can be Info, links, about...
-    socialIcons: # optional
-      - name: facebook
-        url: "<link>"
-      - name: twitter
-        url: "<link2>"
+        Title: Rahul Srivastava
+        Content: Hi there, this is Rahul Srivastava working as Software Engineer at Red Hat
+    socialIcons:
       - name: linkedin
-        url: "<link2>"
+        url: "https://www.linkedin.com/in/rahulopensource/"
+      - name: twitter
+        url: "https://twitter.com/rahulopensource"
+      - name: instagram
+        url: "https://www.instagram.com/rahul_srivastava__/"
 
     cover:
         linkFullImages: true

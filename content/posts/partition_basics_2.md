@@ -2,6 +2,8 @@
 title: "Logical Volume Manager (LVM) in Linux"
 date: 2022-05-08T18:00:41+05:30
 draft: false
+tags: ["linux", "filesysystem", "partition", "lvm"]
+categories: ["linux", "operating system"]
 ---
 
 LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
