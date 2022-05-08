@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Posts on Rahul Srivastava</title>
-    <link>https://rasrivas.in/posts/</link>
-    <description>Recent content in Posts on Rahul Srivastava</description>
+    <title>lvm on Rahul Srivastava</title>
+    <link>https://rasrivas.in/tags/lvm/</link>
+    <description>Recent content in lvm on Rahul Srivastava</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 08 May 2022 18:52:59 +0530</lastBuildDate><atom:link href="https://rasrivas.in/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 08 May 2022 18:52:59 +0530</lastBuildDate><atom:link href="https://rasrivas.in/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Setup an AWS EKS cluster with eksctl</title>
       <link>https://rasrivas.in/posts/aws_eks_eksctl/</link>
@@ -22,15 +22,6 @@ Details Course Content:   Setup an AWS EKS cluster with eksctl
     </item>
     
     <item>
-      <title>SWAP partition in Linux</title>
-      <link>https://rasrivas.in/posts/partition_basics_3_swap/</link>
-      <pubDate>Sun, 08 May 2022 18:36:43 +0530</pubDate>
-      
-      <guid>https://rasrivas.in/posts/partition_basics_3_swap/</guid>
-      <description>Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space. While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM. Swap space is located on hard drives, which have a slower access time than physical memory.</description>
-    </item>
-    
-    <item>
       <title>Logical Volume Manager (LVM) in Linux</title>
       <link>https://rasrivas.in/posts/partition_basics_2/</link>
       <pubDate>Sun, 08 May 2022 18:00:41 +0530</pubDate>
@@ -39,17 +30,6 @@ Details Course Content:   Setup an AWS EKS cluster with eksctl
       <description>LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
 With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.
 The physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it.</description>
-    </item>
-    
-    <item>
-      <title>Disk Partitioning in Linux</title>
-      <link>https://rasrivas.in/posts/partition_basics_1/</link>
-      <pubDate>Sun, 08 May 2022 17:05:08 +0530</pubDate>
-      
-      <guid>https://rasrivas.in/posts/partition_basics_1/</guid>
-      <description>Disk Partitioning is the process of dividing a disk into one or more logical areas, often known as partitions, on which the user can work separately.
-It is one step of disk formatting. If a partition is created, the disk will store the information about the location and size of partitions in the partition table.
-With the partition table, each partition can appear to the operating system as a logical disk, and users can read and write data on those disks.</description>
     </item>
     
   </channel>

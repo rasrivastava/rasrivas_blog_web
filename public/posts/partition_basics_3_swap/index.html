@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>SWAP partition in Linux | Rahul Srivastava</title>
+<meta name="keywords" content="linux, filesysystem, partition, swap">
+<meta name="description" content="Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space. While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM. Swap space is located on hard drives, which have a slower access time than physical memory.">
+<meta name="author" content="">
+<link rel="canonical" href="https://rasrivas.in/posts/partition_basics_3_swap/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.ec8da366ca2fb647537ccb7a8f6fa5b4e9cd3c7a0d3171dd2d3baad1e49c8bfc.css" integrity="sha256-7I2jZsovtkdTfMt6j2&#43;ltOnNPHoNMXHdLTuq0eSci/w=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.2840b7fccd34145847db71a290569594bdbdb00047097f75d6495d162f5d7dff.js" integrity="sha256-KEC3/M00FFhH23GikFaVlL29sABHCX911kldFi9dff8="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://rasrivas.in/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://rasrivas.in/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://rasrivas.in/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://rasrivas.in/apple-touch-icon.png">
+<link rel="mask-icon" href="https://rasrivas.in/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="SWAP partition in Linux" />
+<meta property="og:description" content="Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space. While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM. Swap space is located on hard drives, which have a slower access time than physical memory." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://rasrivas.in/posts/partition_basics_3_swap/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-05-08T18:36:43&#43;05:30" />
+<meta property="article:modified_time" content="2022-05-08T18:36:43&#43;05:30" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="SWAP partition in Linux"/>
+<meta name="twitter:description" content="Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space. While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM. Swap space is located on hard drives, which have a slower access time than physical memory."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://rasrivas.in/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "SWAP partition in Linux",
+      "item": "https://rasrivas.in/posts/partition_basics_3_swap/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SWAP partition in Linux",
+  "name": "SWAP partition in Linux",
+  "description": "Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space. While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM. Swap space is located on hard drives, which have a slower access time than physical memory.",
+  "keywords": [
+    "linux", "filesysystem", "partition", "swap"
+  ],
+  "articleBody": " Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space. While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM. Swap space is located on hard drives, which have a slower access time than physical memory. Swap space can be a dedicated swap partition (recommended), a swap file, or a combination of swap partitions and swap files. Virtual memory is not same as SWAP partition  Listing the available hard disk $ lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 5G 0 disk └─mydemovg-mydemolv 253:3 0 8G 0 lvm nvme0n3 259:4 0 5G 0 disk ├─mydemovg-mydemolv 253:3 0 8G 0 lvm └─mydemovg-demolv2 253:4 0 12M 0 lvm nvme0n4 259:5 0 20G 0 disk  We can see nvme0n4 if available  Creating a 5 GB primary partition for the nvme0n4 # fdisk /dev/nvme0n4 Welcome to fdisk (util-linux 2.32.1). Changes will remain in memory only, until you decide to write them. Be careful before using the write command. Device does not contain a recognized partition table. Created a new DOS disklabel with disk identifier 0x2e5bfd47. Command (m for help): n Partition type p primary (0 primary, 0 extended, 4 free) e extended (container for logical partitions) First sector (2048-41943039, default 2048): Last sector, +sectors or +size{K,M,G,T,P} (2048-41943039, default 41943039): +5G Created a new partition 1 of type 'Linux' and of size 5 GiB. Command (m for help): w The partition table has been altered. Calling ioctl() to re-read partition table. Syncing disks. # Partition is created for nvme0n4 as nvme0n4p1 # lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sr0 11:0 1 7.9G 0 rom /dvd nvme0n1 259:0 0 100G 0 disk ├─nvme0n1p1 259:1 0 1G 0 part /boot └─nvme0n1p2 259:2 0 99G 0 part ├─rhel_192-root 253:0 0 50G 0 lvm / ├─rhel_192-swap 253:1 0 4.2G 0 lvm [SWAP] └─rhel_192-home 253:2 0 44.8G 0 lvm /home nvme0n2 259:3 0 5G 0 disk └─mydemovg-mydemolv 253:3 0 8G 0 lvm nvme0n3 259:4 0 5G 0 disk ├─mydemovg-mydemolv 253:3 0 8G 0 lvm └─mydemovg-demolv2 253:4 0 12M 0 lvm nvme0n4 259:5 0 20G 0 disk └─nvme0n4p1 259:7 0 5G 0 part Update udevadm # udevadm settle #  After the kernel boots, udevd is used to create device nodes for all detected devices. That is a relatively time consuming task that has to be completed for the boot process to continue, otherwise there is a risk of services failing due to missing device nodes. udevadm settle waits for udevd to process the device creation events for all hardware devices, thus ensuring that any device nodes have been created successfully before proceeding.  Creating SWAP # mkswap /dev/nvme0n4p1 Setting up swapspace version 1, size = 5 GiB (5368705024 bytes) no label, UUID=9f42d441-5934-4cde-ac9b-380aa4c81912 we can verfiy it, it doesn’t show the new swap # swapon -s Filename\tType\tSize\tUsed\tPriority /dev/dm-1 partition\t4431868\t36096\t-2 also, if we see using free command, we already had 4.2Gi total # free -h total used free shared buff/cache available Mem: 3.1Gi 1.8Gi 822Mi 5.0Mi 501Mi 1.1Gi Swap: 4.2Gi 35Mi 4.2Gi To show this, We have to active it # swapon /dev/nvme0n4p1 If we now verify it, we see the new partition added # swapon -s Filename\tType\tSize\tUsed\tPriority /dev/dm-1 partition\t4431868\t36096\t-2 /dev/nvme0n4p1 partition\t5242876\t0\t-3 Now, we can see total swap m/m as 9.2Gi # free -h total used free shared buff/cache available Mem: 3.1Gi 1.8Gi 817Mi 5.0Mi 501Mi 1.1Gi Swap: 9.2Gi 35Mi 9.2Gi Again this is tempoary in nature, to make it permanent, we need to make an entry in fstab /dev/nvme0n4p1 swap swap defaults 0 0 # cat /etc/fstab # # /etc/fstab # Created by anaconda on Sat May 30 07:17:47 2020 # # Accessible filesystems, by reference, are maintained under '/dev/disk/'. # See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info. # # After editing this file, run 'systemctl daemon-reload' to update systemd # units generated from this file. # /dev/mapper/rhel_192-root / xfs defaults 0 0 UUID=8b6ecb4a-2165-4726-a5f6-dfad4827aae3 /boot xfs defaults 0 0 /dev/mapper/rhel_192-home /home xfs defaults 0 0 /dev/mapper/rhel_192-swap swap swap defaults 0 0 /dev/nvme0n4p1 swap swap defaults 0 0  we can verify if everything entired is correct # mount -a #   How much SWAP we can create  Any amount of SWAP memory we can create but only depends upon your use case how much RAM is being used in fixing months according to which we can decide the SWAP memory.  Use case of SWAP memory Lets create a system which has   2 GiB of SWAP memory\n  4 GiB of real RAM memory\n  Now, lets suppose the real RAM memory is consumed by 3.5 GiB of memory and only 500 MiB of memory is left\n  And we have a image of 1 GiB which has to loaded as user wants to view the picture\n  But, actually we have only 500 MiB of memory is left\n  Now, what happens there will be call between SWAP memory and RAM memory\n SWAP memory will be say to RAM memory, I have a 1 GiB image which needs to viewed by user (for this it should actually load on RAM only because while CPU processing, it will only look for real RAM memory not SWAP memory) So, in this case, what RAM will do, it will look into its internal processes/programs which is already loaded on it. and will search for the last viewed processes/programs by the CPU, these processes/programs will be moved to SWAP memory which is logically on physical hard disk (this is called as SWIPE OUT) and the image which has to be viewed by user will be loaded on real RAM and CPU can load it and view to the user. If the again the processes/programs which is loaded on SWAP memory is called by user (CPU), then again these processes/programs can be moved back on real RAM memory (this is called as SWIPE OUT)    Note: In all the ways the real RAM memory will be only 4 GiB and CPU will (can) process processes/programs running on real RAM memory\n  we have a another command to view more stats on SWAP m/m\n# vmstat procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu----- r b swpd free buff cache si so bi bo in cs us sy id wa st 0 0 36096 829532 40 520520 1 4 71 24 105 218 1 1 98 0 0   Another use case of SWAP memory   https://opensource.com/article/18/9/swap-space-linux-systems\n  There are two basic types of memory in a typical computer.\n  The first type, random access memory (RAM), is used to store data and programs while they are being actively used by the computer.\n  Programs and data cannot be used by the computer unless they are stored in RAM.\n  RAM is volatile memory; that is, the data stored in RAM is lost if the computer is turned off.\n  Hard drives are magnetic media used for long-term storage of data and programs.\n  Magnetic media is nonvolatile; the data stored on a disk remains even when power is removed from the computer.\n  The CPU (central processing unit) cannot directly access the programs and data on the hard drive; it must be copied into RAM first, and that is where the CPU can access its programming instructions and the data to be operated on by those instructions.\n  During the boot process, a computer copies specific operating system programs, such as the kernel and init or systemd, and data from the hard drive into RAM, where it is accessed directly by the computer’s processor, the CPU.\n  Swap space  The primary function of swap space is to substitute disk space for RAM memory when real RAM fills up and more space is needed. For example, assume you have a computer system with 8GB of RAM. If you start up programs that don’t fill that RAM, everything is fine and no swapping is required. But suppose the spreadsheet you are working on grows when you add more rows, and that, plus everything else that’s running, now fills all of RAM. Without swap space available, you would have to stop working on the spreadsheet until you could free up some of your limited RAM by closing down some other programs. The kernel uses a memory management program that detects blocks, aka pages, of memory in which the contents have not been used recently. The memory management program swaps enough of these relatively infrequently used pages of memory out* to a special partition on the hard drive specifically designated for paging or swapping. This frees up RAM and makes room for more data to be entered into your spreadsheet. Those pages of memory swapped out to the hard drive are tracked by the kernel’s memory management code and can be paged back into RAM if they are needed. The total amount of memory in a Linux computer is the RAM plus swap space and is referred to as virtual memory.  Types of Linux swap   Linux provides for two types of swap space.\n  By default, most Linux installations create a swap partition, but it is also possible to use a specially configured file as a swap file.\n  A swap partition is just what its name implies—a standard disk partition that is designated as swap space by the mkswap command.\n  A swap file can be used if there is no free disk space in which to create a new swap partition or space in a volume group where a logical volume can be created for swap space.\n  This is just a regular file that is created and preallocated to a specified size.\n  Then the mkswap command is run to configure it as swap space.\n  I don’t recommend using a file for swap space unless absolutely necessary.\n  Thrashing   Thrashing can occur when total virtual memory, both RAM and swap space, become nearly full.\n  The system spends so much time paging blocks of memory between swap space and RAM and back that little time is left for real work.\n  The typical symptoms of this are obvious:\n The system becomes slow or completely unresponsive and the hard drive activity light is on almost constantly.    If you can manage to issue a command like free that shows CPU load and memory usage, you will see that the CPU load is very high, perhaps as much as 30 to 40 times the number of CPU cores in the system.\n  Another symptom is that both RAM and swap space are almost completely allocated.\n  After the fact, looking at SAR (system activity report) data can also show these symptoms.\n  I install SAR on every system I work on and use it for post-repair forensic analysis.\n  ",
+  "wordCount" : "1846",
+  "inLanguage": "en",
+  "datePublished": "2022-05-08T18:36:43+05:30",
+  "dateModified": "2022-05-08T18:36:43+05:30",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://rasrivas.in/posts/partition_basics_3_swap/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rahul Srivastava",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://rasrivas.in/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://rasrivas.in/" accesskey="h" title="Rahul Srivastava (Alt + H)">Rahul Srivastava</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://rasrivas.in/categories" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://rasrivas.in/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://rasrivas.in/archives" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://rasrivas.in/">Home</a>&nbsp;»&nbsp;<a href="https://rasrivas.in/posts/">Posts</a></div>
+    <h1 class="post-title">
+      SWAP partition in Linux
+    </h1>
+    <div class="post-meta"><span title='2022-05-08 18:36:43 +0530 IST'>May 8, 2022</span>&nbsp;·&nbsp;9 min
+
+</div>
+  </header> 
+  <div class="post-content"><ul>
+<li>Swap space in Linux is used when the amount of physical memory (RAM) is full.</li>
+<li>If the system needs more memory resources and the RAM is full, inactive pages - in memory are moved to the swap space.</li>
+<li>While swap space can help machines with a small amount of RAM, it should not be considered a replacement for more RAM.</li>
+<li>Swap space is located on hard drives, which have a slower access time than physical memory.</li>
+<li>Swap space can be a dedicated swap partition (recommended), a swap file, or a combination of swap partitions and swap files.</li>
+<li>Virtual memory is not same as SWAP partition</li>
+</ul>
+<h3 id="listing-the-available-hard-disk">Listing the available hard disk<a hidden class="anchor" aria-hidden="true" href="#listing-the-available-hard-disk">#</a></h3>
+<pre tabindex="0"><code>$ lsblk 
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                  11:0    1  7.9G  0 rom  /dvd
+nvme0n1             259:0    0  100G  0 disk 
+├─nvme0n1p1         259:1    0    1G  0 part /boot
+└─nvme0n1p2         259:2    0   99G  0 part 
+  ├─rhel_192-root   253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap   253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home   253:2    0 44.8G  0 lvm  /home
+nvme0n2             259:3    0    5G  0 disk 
+└─mydemovg-mydemolv 253:3    0    8G  0 lvm  
+nvme0n3             259:4    0    5G  0 disk 
+├─mydemovg-mydemolv 253:3    0    8G  0 lvm  
+└─mydemovg-demolv2  253:4    0   12M  0 lvm  
+nvme0n4             259:5    0   20G  0 disk
+</code></pre><ul>
+<li>We can see <strong>nvme0n4</strong> if available</li>
+</ul>
+<h4 id="creating-a-5-gb-primary-partition-for-the-nvme0n4">Creating a 5 GB primary partition for the nvme0n4<a hidden class="anchor" aria-hidden="true" href="#creating-a-5-gb-primary-partition-for-the-nvme0n4">#</a></h4>
+<pre tabindex="0"><code># fdisk /dev/nvme0n4
+
+Welcome to fdisk (util-linux 2.32.1).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table.
+Created a new DOS disklabel with disk identifier 0x2e5bfd47.
+
+Command (m for help): n
+Partition type
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended (container for logical partitions)
+First sector (2048-41943039, default 2048): 
+Last sector, +sectors or +size{K,M,G,T,P} (2048-41943039, default 41943039): +5G
+
+Created a new partition 1 of type &#39;Linux&#39; and of size 5 GiB.
+
+Command (m for help): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+#
+</code></pre><h4 id="partition-is-created-for-nvme0n4-as-nvme0n4p1">Partition is created for nvme0n4 as nvme0n4p1<a hidden class="anchor" aria-hidden="true" href="#partition-is-created-for-nvme0n4-as-nvme0n4p1">#</a></h4>
+<pre tabindex="0"><code># lsblk 
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                  11:0    1  7.9G  0 rom  /dvd
+nvme0n1             259:0    0  100G  0 disk 
+├─nvme0n1p1         259:1    0    1G  0 part /boot
+└─nvme0n1p2         259:2    0   99G  0 part 
+  ├─rhel_192-root   253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap   253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home   253:2    0 44.8G  0 lvm  /home
+nvme0n2             259:3    0    5G  0 disk 
+└─mydemovg-mydemolv 253:3    0    8G  0 lvm  
+nvme0n3             259:4    0    5G  0 disk 
+├─mydemovg-mydemolv 253:3    0    8G  0 lvm  
+└─mydemovg-demolv2  253:4    0   12M  0 lvm  
+nvme0n4             259:5    0   20G  0 disk 
+└─nvme0n4p1         259:7    0    5G  0 part
+</code></pre><h4 id="update-udevadm">Update udevadm<a hidden class="anchor" aria-hidden="true" href="#update-udevadm">#</a></h4>
+<pre tabindex="0"><code># udevadm settle
+#
+</code></pre><ul>
+<li>After the kernel boots, udevd is used to create device nodes for all detected devices.</li>
+<li>That is a relatively time consuming task that has to be completed for the boot process to continue, otherwise there is a risk of services failing due to missing device nodes.</li>
+<li><code>udevadm settle</code> waits for udevd to process the device creation events for all hardware devices, thus ensuring that any device nodes have been created successfully before proceeding.</li>
+</ul>
+<h4 id="creating-swap">Creating SWAP<a hidden class="anchor" aria-hidden="true" href="#creating-swap">#</a></h4>
+<pre tabindex="0"><code># mkswap /dev/nvme0n4p1
+Setting up swapspace version 1, size = 5 GiB (5368705024 bytes)
+no label, UUID=9f42d441-5934-4cde-ac9b-380aa4c81912
+</code></pre><h4 id="we-can-verfiy-it-it-doesnt-show-the-new-swap">we can verfiy it, it doesn&rsquo;t show the new swap<a hidden class="anchor" aria-hidden="true" href="#we-can-verfiy-it-it-doesnt-show-the-new-swap">#</a></h4>
+<pre tabindex="0"><code># swapon -s
+Filename				Type		Size	Used	Priority
+/dev/dm-1                              	partition	4431868	36096	-2
+</code></pre><h4 id="also-if-we-see-using-free-command-we-already-had-42gi-total">also, if we see using <strong>free</strong> command, we already had <code>4.2Gi</code> total<a hidden class="anchor" aria-hidden="true" href="#also-if-we-see-using-free-command-we-already-had-42gi-total">#</a></h4>
+<pre tabindex="0"><code># free -h
+            total        used        free      shared  buff/cache   available
+Mem:          3.1Gi       1.8Gi       822Mi       5.0Mi       501Mi       1.1Gi
+Swap:         4.2Gi        35Mi       4.2Gi
+</code></pre><h4 id="to-show-this-we-have-to-active-it">To show this, We have to active it<a hidden class="anchor" aria-hidden="true" href="#to-show-this-we-have-to-active-it">#</a></h4>
+<pre tabindex="0"><code># swapon /dev/nvme0n4p1
+</code></pre><h4 id="if-we-now-verify-it-we-see-the-new-partition-added">If we now verify it, we see the new partition added<a hidden class="anchor" aria-hidden="true" href="#if-we-now-verify-it-we-see-the-new-partition-added">#</a></h4>
+<pre tabindex="0"><code># swapon -s
+Filename				Type		Size	Used	Priority
+/dev/dm-1                              	partition	4431868	36096	-2
+/dev/nvme0n4p1                         	partition	5242876	0	-3
+</code></pre><h4 id="now-we-can-see-total-swap-mm-as-92gi">Now, we can see total swap m/m as <strong>9.2Gi</strong><a hidden class="anchor" aria-hidden="true" href="#now-we-can-see-total-swap-mm-as-92gi">#</a></h4>
+<pre tabindex="0"><code># free -h
+            total        used        free      shared  buff/cache   available
+Mem:          3.1Gi       1.8Gi       817Mi       5.0Mi       501Mi       1.1Gi
+Swap:         9.2Gi        35Mi       9.2Gi
+</code></pre><h4 id="again-this-is-tempoary-in-nature-to-make-it-permanent-we-need-to-make-an-entry-in-fstab">Again this is tempoary in nature, to make it permanent, we need to make an entry in fstab<a hidden class="anchor" aria-hidden="true" href="#again-this-is-tempoary-in-nature-to-make-it-permanent-we-need-to-make-an-entry-in-fstab">#</a></h4>
+<pre tabindex="0"><code>/dev/nvme0n4p1 swap swap defaults 0 0
+</code></pre><pre tabindex="0"><code># cat /etc/fstab
+
+#
+# /etc/fstab
+# Created by anaconda on Sat May 30 07:17:47 2020 
+#
+# Accessible filesystems, by reference, are maintained under &#39;/dev/disk/&#39;.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run &#39;systemctl daemon-reload&#39; to update systemd
+# units generated from this file.
+#
+/dev/mapper/rhel_192-root /                       xfs     defaults        0 0
+UUID=8b6ecb4a-2165-4726-a5f6-dfad4827aae3 /boot                   xfs     defaults        0 0
+/dev/mapper/rhel_192-home /home                   xfs     defaults        0 0
+/dev/mapper/rhel_192-swap swap                    swap    defaults        0 0
+
+/dev/nvme0n4p1 swap swap defaults 0 0
+</code></pre><ul>
+<li>we can verify if everything entired is correct
+<pre tabindex="0"><code># mount -a
+#
+</code></pre></li>
+</ul>
+<h3 id="how-much-swap-we-can-create">How much SWAP we can create<a hidden class="anchor" aria-hidden="true" href="#how-much-swap-we-can-create">#</a></h3>
+<ul>
+<li>Any amount of SWAP memory we can create but only depends upon your use case how much RAM is being used in fixing months according to which we can decide the SWAP memory.</li>
+</ul>
+<h3 id="use-case-of-swap-memory">Use case of SWAP memory<a hidden class="anchor" aria-hidden="true" href="#use-case-of-swap-memory">#</a></h3>
+<h4 id="lets-create-a-system-which-has">Lets create a system which has<a hidden class="anchor" aria-hidden="true" href="#lets-create-a-system-which-has">#</a></h4>
+<ul>
+<li>
+<p><strong>2 GiB</strong> of <strong>SWAP</strong> memory</p>
+</li>
+<li>
+<p><strong>4 GiB</strong> of real <strong>RAM</strong> memory</p>
+</li>
+<li>
+<p>Now, lets suppose the real <strong>RAM</strong> memory is consumed by <strong>3.5 GiB</strong> of memory and only <strong>500 MiB</strong> of memory is left</p>
+</li>
+<li>
+<p>And we have a image of <strong>1 GiB</strong> which has to loaded as user wants to view the picture</p>
+</li>
+<li>
+<p>But, actually we have only <strong>500 MiB</strong> of memory is left</p>
+</li>
+<li>
+<p>Now, what happens there will be call between <strong>SWAP</strong> memory and <strong>RAM</strong> memory</p>
+<ul>
+<li><strong>SWAP</strong> memory will be say to <strong>RAM</strong> memory, I have a <strong>1 GiB</strong> image which needs to viewed by user (for this it should actually load on RAM only because while CPU processing, it will only look for real <strong>RAM</strong> memory not <strong>SWAP</strong> memory)</li>
+<li>So, in this case, what <strong>RAM</strong> will do, it will look into its internal processes/programs which is already loaded on it.</li>
+<li>and will search for the last viewed processes/programs by the CPU, these processes/programs will be moved to <strong>SWAP</strong> memory which is logically on physical hard disk (this is called as <strong>SWIPE OUT</strong>) and the image which has to be viewed by user will be loaded on real <strong>RAM</strong> and <strong>CPU</strong> can load it and view to the user.</li>
+<li>If the again the processes/programs which is loaded on <strong>SWAP</strong> memory is called by user (CPU), then again these processes/programs can be moved back on real <strong>RAM</strong> memory (this is called as <strong>SWIPE OUT</strong>)</li>
+</ul>
+</li>
+<li>
+<p><strong>Note:</strong> In all the ways the real <strong>RAM</strong> memory will be only <strong>4 GiB</strong> and CPU will (can) process processes/programs running on real <strong>RAM</strong> memory</p>
+</li>
+<li>
+<p>we have a another command to view more stats on SWAP m/m</p>
+<pre tabindex="0"><code># vmstat 
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+0  0  36096 829532     40 520520    1    4    71    24  105  218  1  1 98  0  0
+</code></pre></li>
+</ul>
+<h4 id="another-use-case-of-swap-memory">Another use case of SWAP memory<a hidden class="anchor" aria-hidden="true" href="#another-use-case-of-swap-memory">#</a></h4>
+<ul>
+<li>
+<p><a href="https://opensource.com/article/18/9/swap-space-linux-systems">https://opensource.com/article/18/9/swap-space-linux-systems</a></p>
+</li>
+<li>
+<p>There are two basic types of memory in a typical computer.</p>
+</li>
+<li>
+<p>The first type, random access memory (RAM), is used to store data and programs while they are being actively used by the computer.</p>
+</li>
+<li>
+<p>Programs and data cannot be used by the computer unless they are stored in RAM.</p>
+</li>
+<li>
+<p>RAM is volatile memory; that is, the data stored in RAM is lost if the computer is turned off.</p>
+</li>
+<li>
+<p>Hard drives are magnetic media used for long-term storage of data and programs.</p>
+</li>
+<li>
+<p>Magnetic media is nonvolatile; the data stored on a disk remains even when power is removed from the computer.</p>
+</li>
+<li>
+<p>The CPU (central processing unit) cannot directly access the programs and data on the hard drive; it must be copied into RAM first, and that is where the CPU can access its programming instructions and the data to be operated on by those instructions.</p>
+</li>
+<li>
+<p>During the boot process, a computer copies specific operating system programs, such as the kernel and init or systemd, and data from the hard drive into RAM, where it is accessed directly by the computer’s processor, the CPU.</p>
+</li>
+</ul>
+<h3 id="swap-space">Swap space<a hidden class="anchor" aria-hidden="true" href="#swap-space">#</a></h3>
+<ul>
+<li>The primary function of swap space is to substitute disk space for RAM memory when real RAM fills up and more space is needed.</li>
+<li>For example, assume you have a computer system with <strong>8GB of RAM</strong>.</li>
+<li>If you start up programs that don’t fill that RAM, everything is fine and no swapping is required.</li>
+<li>But suppose the spreadsheet you are working on grows when you add more rows, and that, plus everything else that&rsquo;s running, now fills all of RAM.</li>
+<li><strong>Without swap space available</strong>, you would have to stop working on the spreadsheet until you could free up some of your limited RAM by <strong>closing down some other programs</strong>.</li>
+<li>The <strong>kernel</strong> uses a memory management program that detects <em><strong>blocks, aka pages, of memory</strong></em> in which the <strong>contents have not been used recently</strong>.</li>
+<li>The <em><strong>memory management program</strong></em> <strong>swaps enough of these relatively infrequently used pages of memory out</strong>* to a special partition on the hard drive specifically designated for <strong>paging</strong> or <strong>swapping</strong>.</li>
+<li>This <em><strong>frees up RAM and makes room for more data</strong></em> to be entered into your spreadsheet.</li>
+<li>Those pages of memory <strong>swapped out</strong> to the hard drive are tracked by the kernel’s memory management code and can be <strong>paged back into RAM if they are needed</strong>.</li>
+<li>The <strong>total amount of memory</strong> in a Linux computer is the <strong>RAM plus swap space</strong> and is referred to as <em><strong>virtual memory</strong></em>.</li>
+</ul>
+<h3 id="types-of-linux-swap">Types of Linux swap<a hidden class="anchor" aria-hidden="true" href="#types-of-linux-swap">#</a></h3>
+<ul>
+<li>
+<p>Linux provides for two types of swap space.</p>
+</li>
+<li>
+<p>By default, most Linux installations create a <strong>swap partition</strong>, but it is also possible to use a specially configured file as a swap file.</p>
+</li>
+<li>
+<p>A <strong>swap partition</strong> is just what its name implies—a standard disk partition that is designated as swap space by the <strong>mkswap</strong> command.</p>
+</li>
+<li>
+<p>A <strong>swap file</strong> can be used if there is no free disk space in which to create a new swap partition or space in a volume group where a logical volume can be created for swap space.</p>
+</li>
+<li>
+<p>This is just a regular file that is created and preallocated to a specified size.</p>
+</li>
+<li>
+<p>Then the <strong>mkswap command</strong> is run to configure it as swap space.</p>
+</li>
+<li>
+<p>I don’t recommend using a file for swap space unless absolutely necessary.</p>
+</li>
+</ul>
+<h3 id="thrashing">Thrashing<a hidden class="anchor" aria-hidden="true" href="#thrashing">#</a></h3>
+<ul>
+<li>
+<p><strong>Thrashing</strong> can occur when <strong>total virtual memory</strong>, <em><strong>both RAM and swap space</strong></em>, become <strong>nearly full</strong>.</p>
+</li>
+<li>
+<p>The system spends so much time paging blocks of memory between swap space and RAM and back that little time is left for real work.</p>
+</li>
+<li>
+<p>The typical symptoms of this are obvious:</p>
+<ul>
+<li>The system becomes slow or completely unresponsive</li>
+<li>and the hard drive activity light is on almost constantly.</li>
+</ul>
+</li>
+<li>
+<p>If you can manage to issue a command like free that shows CPU load and memory usage, you will see that the CPU load is very high, perhaps as much as 30 to 40 times the number of CPU cores in the system.</p>
+</li>
+<li>
+<p>Another symptom is that both RAM and swap space are almost completely allocated.</p>
+</li>
+<li>
+<p>After the fact, looking at SAR (system activity report) data can also show these symptoms.</p>
+</li>
+<li>
+<p>I install SAR on every system I work on and use it for post-repair forensic analysis.</p>
+</li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://rasrivas.in/tags/linux/">linux</a></li>
+      <li><a href="https://rasrivas.in/tags/filesysystem/">filesysystem</a></li>
+      <li><a href="https://rasrivas.in/tags/partition/">partition</a></li>
+      <li><a href="https://rasrivas.in/tags/swap/">swap</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://rasrivas.in/posts/aws_eks_eksctl/">
+    <span class="title">« Prev Page</span>
+    <br>
+    <span>Setup an AWS EKS cluster with eksctl</span>
+  </a>
+  <a class="next" href="https://rasrivas.in/posts/partition_basics_2/">
+    <span class="title">Next Page »</span>
+    <br>
+    <span>Logical Volume Manager (LVM) in Linux</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share SWAP partition in Linux on twitter"
+        href="https://twitter.com/intent/tweet/?text=SWAP%20partition%20in%20Linux&amp;url=https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f&amp;hashtags=linux%2cfilesysystem%2cpartition%2cswap">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share SWAP partition in Linux on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f&amp;title=SWAP%20partition%20in%20Linux&amp;summary=SWAP%20partition%20in%20Linux&amp;source=https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share SWAP partition in Linux on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f&title=SWAP%20partition%20in%20Linux">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share SWAP partition in Linux on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share SWAP partition in Linux on whatsapp"
+        href="https://api.whatsapp.com/send?text=SWAP%20partition%20in%20Linux%20-%20https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share SWAP partition in Linux on telegram"
+        href="https://telegram.me/share/url?text=SWAP%20partition%20in%20Linux&amp;url=https%3a%2f%2frasrivas.in%2fposts%2fpartition_basics_3_swap%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://rasrivas.in/">Rahul Srivastava</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

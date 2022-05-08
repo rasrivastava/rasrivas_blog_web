@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Setup an AWS EKS cluster with eksctl | Rahul Srivastava</title>
+<meta name="keywords" content="linux, filesysystem, partition, lvm">
+<meta name="description" content="eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon&rsquo;s managed Kubernetes service for EC2.
+It is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.
+eksctl Github project
+Details Course Content:   Setup an AWS EKS cluster with eksctl
+ Architecture &amp; Create EKS Cluster with eksctl    Developing for EKS
+ Understanding the Application Architecture Building from Source Publishing to ECR Deploying to EKS Deploying an Application to EKS    AWS EKS operations using eksctl">
+<meta name="author" content="">
+<link rel="canonical" href="https://rasrivas.in/posts/aws_eks_eksctl/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.ec8da366ca2fb647537ccb7a8f6fa5b4e9cd3c7a0d3171dd2d3baad1e49c8bfc.css" integrity="sha256-7I2jZsovtkdTfMt6j2&#43;ltOnNPHoNMXHdLTuq0eSci/w=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.2840b7fccd34145847db71a290569594bdbdb00047097f75d6495d162f5d7dff.js" integrity="sha256-KEC3/M00FFhH23GikFaVlL29sABHCX911kldFi9dff8="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://rasrivas.in/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://rasrivas.in/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://rasrivas.in/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://rasrivas.in/apple-touch-icon.png">
+<link rel="mask-icon" href="https://rasrivas.in/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Setup an AWS EKS cluster with eksctl" />
+<meta property="og:description" content="eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon&rsquo;s managed Kubernetes service for EC2.
+It is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.
+eksctl Github project
+Details Course Content:   Setup an AWS EKS cluster with eksctl
+ Architecture &amp; Create EKS Cluster with eksctl    Developing for EKS
+ Understanding the Application Architecture Building from Source Publishing to ECR Deploying to EKS Deploying an Application to EKS    AWS EKS operations using eksctl" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://rasrivas.in/posts/aws_eks_eksctl/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-05-08T18:52:59&#43;05:30" />
+<meta property="article:modified_time" content="2022-05-08T18:52:59&#43;05:30" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Setup an AWS EKS cluster with eksctl"/>
+<meta name="twitter:description" content="eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon&rsquo;s managed Kubernetes service for EC2.
+It is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.
+eksctl Github project
+Details Course Content:   Setup an AWS EKS cluster with eksctl
+ Architecture &amp; Create EKS Cluster with eksctl    Developing for EKS
+ Understanding the Application Architecture Building from Source Publishing to ECR Deploying to EKS Deploying an Application to EKS    AWS EKS operations using eksctl"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://rasrivas.in/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Setup an AWS EKS cluster with eksctl",
+      "item": "https://rasrivas.in/posts/aws_eks_eksctl/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Setup an AWS EKS cluster with eksctl",
+  "name": "Setup an AWS EKS cluster with eksctl",
+  "description": "eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon\u0026rsquo;s managed Kubernetes service for EC2.\nIt is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.\neksctl Github project\nDetails Course Content:   Setup an AWS EKS cluster with eksctl\n Architecture \u0026amp; Create EKS Cluster with eksctl    Developing for EKS\n Understanding the Application Architecture Building from Source Publishing to ECR Deploying to EKS Deploying an Application to EKS    AWS EKS operations using eksctl",
+  "keywords": [
+    "linux", "filesysystem", "partition", "lvm"
+  ],
+  "articleBody": "eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon’s managed Kubernetes service for EC2.\nIt is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.\neksctl Github project\nDetails Course Content:   Setup an AWS EKS cluster with eksctl\n Architecture \u0026 Create EKS Cluster with eksctl    Developing for EKS\n Understanding the Application Architecture Building from Source Publishing to ECR Deploying to EKS Deploying an Application to EKS    AWS EKS operations using eksctl\n NodeGroups \u0026 Spot Instances Cluster AutoScaler Theory CloudWatch Logging for EKS Cluster Services CloudWatch Containers Insights for EKS    Helm Package Manager on EKS\n Helm installation    Managing Users \u0026 RBAC in EKS\n Adding an Admin User in EKS Adding a Read-Only User in EKS    Deploy the Kubernetes Dashboard\n What is the K8s dashboard ? Install Kubernetes Metrics Server in EKS Deploy \u0026 Explore the Kubernetes Dashboard in EKS    Deploy a stateless sample app\n Deploy backend \u0026 frontend resources Scaling Pods up and down    Deploy a stateful app - using Amazon EBS\n Stateful App Intro \u0026 Architecture Create namespace Create physical volume Deploy MySQL backend Deployment vs StatefulSet with persistent volumes Deploy Wordpress via Deployment \u0026 StatefulSet    Deploy a stateful app - using Amazon EFS\n EFS for Kubernetes Enable EFS Create namespace \u0026 prepare storage Deploy MySQL backend \u0026 Wordpress frontend/li    Fargate on EKS\n Fargate on EKS Create a Fargate Cluster on EKS Add the Fargate Capability to an existing EKS cluster    Install the aws cli command if not installed   For my case its installed\n[rasrivas@rasrivas eks]$ aws --version aws-cli/1.18.69 Python/2.7.17 Linux/5.3.11-100.fc29.x86_64 botocore/1.16.19 [rasrivas@rasrivas eks]$   if not installed (https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)\ncurl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\" unzip awscliv2.zip sudo ./aws/install pip3 install --upgrade --user awscli  then you need to configure your credentials $ aws configure AWS Access Key ID [None]: XXXXXXXXXXXXXXXXXXXXXX AWS Secret Access Key [None]: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default region name [None]: region-code Default output format [None]: json     Let list all the AWS EKS cluster running  Currently no cluster will be running [rasrivas@rasrivas eks]$ aws eks list-clusters { \"clusters\": [] } [rasrivas@rasrivas eks]$   Limitations of AWS EKS command  we can’t specify multiple instances types for the slave notes we can’t use the spot type instance many more  Using eksctl command for AWS EKS management  Installing eksctl package (https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) [rasrivas@rasrivas eks]$ curl --silent --location \"https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz\" | tar xz -C /tmp [rasrivas@rasrivas eks]$ sudo mv /tmp/eksctl /usr/local/bin [rasrivas@rasrivas eks]$ eksctl version 0.23.0 [rasrivas@rasrivas eks]$   Deployming AWS EKS cluster   For this demo we are creating three slave nodes\n 2 instances = t2.micro 1 instance = t2.small    For for creating the above cluster we need to create yaml file\n for this we will use ClusterConfig k8s kind these groups of instance of similar types are called as nodegroups  [rasrivas@rasrivas k8s]$ cat cluster.yml apiVersion: eksctl.io/v1alpha5 kind: ClusterConfig metadata: name: eksclusterdemo region: ap-southeast-1 nodeGroups: - name: ng-1 instanceType: t2.micro desiredCapacity: 2 - name: ng-2 instanceType: t2.small desiredCapacity: 1 [rasrivas@rasrivas k8s]$   Create the cluster using cluster.yml file (generally it takes approx 15 minutes for the configuration)\n[rasrivas@rasrivas k8s]$ eksctl create cluster -f cluster.yml [ℹ] eksctl version 0.23.0 [ℹ] using region ap-southeast-1 [ℹ] setting availability zones to [ap-southeast-1a ap-southeast-1c ap-southeast-1b] [ℹ] subnets for ap-southeast-1a - public:192.168.0.0/19 private:192.168.96.0/19 [ℹ] subnets for ap-southeast-1c - public:192.168.32.0/19 private:192.168.128.0/19 [ℹ] subnets for ap-southeast-1b - public:192.168.64.0/19 private:192.168.160.0/19 [ℹ] nodegroup \"ng-1\" will use \"ami-0eca92b64847fff2a\" [AmazonLinux2/1.16] [ℹ] nodegroup \"ng-2\" will use \"ami-0eca92b64847fff2a\" [AmazonLinux2/1.16] [ℹ] using Kubernetes version 1.16 [ℹ] creating EKS cluster \"eksclusterdemo\" in \"ap-southeast-1\" region with un-managed nodes [ℹ] 2 nodegroups (ng-1, ng-2) were included (based on the include/exclude rules) [ℹ] will create a CloudFormation stack for cluster itself and 2 nodegroup stack(s) [ℹ] will create a CloudFormation stack for cluster itself and 0 managed nodegroup stack(s) [ℹ] if you encounter any issues, check CloudFormation console or try 'eksctl utils describe-stacks --region=ap-southeast-1 --cluster=eksclusterdemo' [ℹ] CloudWatch logging will not be enabled for cluster \"eksclusterdemo\" in \"ap-southeast-1\" [ℹ] you can enable it with 'eksctl utils update-cluster-logging --region=ap-southeast-1 --cluster=eksclusterdemo' [ℹ] Kubernetes API endpoint access will use default of {publicAccess=true, privateAccess=false} for cluster \"eksclusterdemo\" in \"ap-southeast-1\" [ℹ] 2 sequential tasks: { create cluster control plane \"eksclusterdemo\", 2 sequential sub-tasks: { no tasks, 2 parallel sub-tasks: { create nodegroup \"ng-1\", create nodegroup \"ng-2\" } } } [ℹ] building cluster stack \"eksctl-eksclusterdemo-cluster\" [ℹ] deploying stack \"eksctl-eksclusterdemo-cluster\" [ℹ] building nodegroup stack \"eksctl-eksclusterdemo-nodegroup-ng-2\" [ℹ] building nodegroup stack \"eksctl-eksclusterdemo-nodegroup-ng-1\" [ℹ] --nodes-min=2 was set automatically for nodegroup ng-1 [ℹ] --nodes-max=2 was set automatically for nodegroup ng-1 [ℹ] --nodes-min=1 was set automatically for nodegroup ng-2 [ℹ] --nodes-max=1 was set automatically for nodegroup ng-2 [ℹ] deploying stack \"eksctl-eksclusterdemo-nodegroup-ng-1\" [ℹ] deploying stack \"eksctl-eksclusterdemo-nodegroup-ng-2\" [ℹ] waiting for the control plane availability... [✔] saved kubeconfig as \"/home/rasrivas/.kube/config\" [ℹ] no tasks [✔] all EKS cluster resources for \"eksclusterdemo\" have been created [ℹ] adding identity \"arn:aws:iam::350276982418:role/eksctl-eksclusterdemo-nodegroup-n-NodeInstanceRole-1S9H477T7LL0B\" to auth ConfigMap [ℹ] nodegroup \"ng-1\" has 0 node(s) [ℹ] waiting for at least 2 node(s) to become ready in \"ng-1\" [ℹ] nodegroup \"ng-1\" has 2 node(s) [ℹ] node \"ip-192-168-50-40.ap-southeast-1.compute.internal\" is ready [ℹ] node \"ip-192-168-70-91.ap-southeast-1.compute.internal\" is ready [ℹ] adding identity \"arn:aws:iam::350276982418:role/eksctl-eksclusterdemo-nodegroup-n-NodeInstanceRole-JJNSN2MGFW1V\" to auth ConfigMap [ℹ] nodegroup \"ng-2\" has 0 node(s) [ℹ] waiting for at least 1 node(s) to become ready in \"ng-2\" [ℹ] nodegroup \"ng-2\" has 1 node(s) [ℹ] node \"ip-192-168-42-119.ap-southeast-1.compute.internal\" is ready [ℹ] kubectl command should work with \"/home/rasrivas/.kube/config\", try 'kubectl get nodes' [✔] EKS cluster \"eksclusterdemo\" in \"ap-southeast-1\" region is ready [rasrivas@rasrivas k8s]$   we can notice few things from the creating the cluster\n eksctl command deploy the infrastructure using AWS cloudformation ℹ] will create a CloudFormation stack for cluster itself and 2 nodegroup stack(s) [ℹ] will create a CloudFormation stack for cluster itself and 0 managed nodegroup stack(s) ------- ------- [ℹ] deploying stack \"eksctl-eksclusterdemo-cluster\"  eksctl in will launch 3 EC instances during this setup for the slave node and a master node will also be created but it will internally managed by AWS eksctl will create some more resources such as VPC, subnet, users, policies etc    its created succesfully and we can verify it:\n[rasrivas@rasrivas k8s]$ aws eks list-clusters --region ap-southeast-1 { \"clusters\": [ \"eksclusterdemo\" ] } [rasrivas@rasrivas k8s]$   Now, we need to connect to cluster   we can connect to the cluster using kubectl command\n kubectl command required a config file    we can generate it if it’s not available, but for my case its available\n$ kubectl config view $ aws eks --region ap-southeast-1 update-kubeconfig --name eksclusterdemo   Checking the cluster  we can cluster info [rasrivas@rasrivas k8s]$ kubectl cluster-info Kubernetes master is running at https://7A9EFAED3294394617D9F9DF696FE746.gr7.ap-southeast-1.eks.amazonaws.com CoreDNS is running at https://7A9EFAED3294394617D9F9DF696FE746.gr7.ap-southeast-1.eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'. [rasrivas@rasrivas k8s]$  we can check the number of nodes present in the pod [rasrivas@rasrivas k8s]$ kubectl get nodes NAME STATUS ROLES AGE VERSION ip-192-168-42-119.ap-southeast-1.compute.internal Ready  9m30s v1.16.8-eks-fd1ea7 ip-192-168-50-40.ap-southeast-1.compute.internal Ready  10m v1.16.8-eks-fd1ea7 ip-192-168-70-91.ap-southeast-1.compute.internal Ready  10m v1.16.8-eks-fd1ea7 [rasrivas@rasrivas k8s]$   Creating name space   its always a good a separate name space for the cluster related deployment\n  checking the all the namespace\n[rasrivas@rasrivas k8s]$ kubectl get ns NAME STATUS AGE default Active 22m kube-node-lease Active 22m kube-public Active 22m kube-system Active 22m [rasrivas@rasrivas k8s]$   creating a new name space\n[rasrivas@rasrivas k8s]$ kubectl create namespace eksns namespace/eksns created [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get ns | grep eksns eksns Active 11s [rasrivas@rasrivas k8s]$   by default, default name space will be used, it use eksns name space by default\n[rasrivas@rasrivas k8s]$ kubectl config set-context --current --namespace=eksns Context \"iam-root-account@eksclusterdemo.ap-southeast-1.eksctl.io\" modified. [rasrivas@rasrivas k8s]$   verifying it\nrasrivas@rasrivas k8s]$ kubectl config view | grep eksns namespace: eksns [rasrivas@rasrivas k8s]$   Creating deployment   creating deployment\n[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php deployment.apps/myweb created [rasrivas@rasrivas k8s]$   verfiying it\n[rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-79b48fb9f5-5mgjm 1/1 Running 0 33s [rasrivas@rasrivas k8s]$   Lets scale it to 3 PODS\n[rasrivas@rasrivas k8s]$ kubectl scale deployment myweb --replicas=3 deployment.apps/myweb scaled [rasrivas@rasrivas k8s]$   lets check on which nodes the PODS are running\n we will the three PODS will be running on all the three nodes  [rasrivas@rasrivas k8s]$ kubectl get pods -o wide NAME READY STATUS RESTARTS AGE IP NODE NOMINATED NODE READINESS GATES myweb-79b48fb9f5-5mgjm 1/1 Running 0 2m31s 192.168.36.3 ip-192-168-42-119.ap-southeast-1.compute.internal   myweb-79b48fb9f5-9clvj 1/1 Running 0 69s 192.168.45.132 ip-192-168-42-119.ap-southeast-1.compute.internal   myweb-79b48fb9f5-wm65z 1/1 Running 0 69s 192.168.83.60 ip-192-168-70-91.ap-southeast-1.compute.internal   [rasrivas@rasrivas k8s]$   ELB setip   current cluster is by default using Node Port service\n we know Node Port service is only reachable to internal network to avail the external connectivity we need to add an ELB    Advantages of ELB:\n A B    creating an ELB for the deployment\n[rasrivas@rasrivas k8s]$ kubectl expose deployment myweb --type=LoadBalancer --port=80 service/myweb exposed [rasrivas@rasrivas k8s]$   at the ……\n  deleting everyting\n[rasrivas@rasrivas k8s]$ kubectl delete all --all pod \"myweb-79b48fb9f5-5mgjm\" deleted pod \"myweb-79b48fb9f5-9clvj\" deleted pod \"myweb-79b48fb9f5-wm65z\" deleted service \"myweb\" deleted deployment.apps \"myweb\" deleted replicaset.apps \"myweb-79b48fb9f5\" deleted [rasrivas@rasrivas k8s]$  auto AWS elb will be deleted      PVC [rasrivas@rasrivas k8s]$ kubectl create -f pvc.yml persistentvolumeclaim/pv-claim-1 created [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get pvc NAME STATUS VOLUME CAPACITY ACCESS MODES STORAGECLASS AGE pv-claim-1 Pending gp2 77s [rasrivas@rasrivas k8s]$ kubectl get pv No resources found in eksns namespace. [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get sc NAME PROVISIONER AGE gp2 (default) kubernetes.io/aws-ebs 44m [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php deployment.apps/myweb created [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-79b48fb9f5-xqjzj 1/1 Running 0 8s [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ eksctl delete cluster -f cluster.yml [ℹ] eksctl version 0.23.0 [ℹ] using region ap-southeast-1 [ℹ] deleting EKS cluster \"eksclusterdemo\" [ℹ] deleted 0 Fargate profile(s) [✔] kubeconfig has been updated [ℹ] cleaning up LoadBalancer services [ℹ] 2 sequential tasks: { 2 parallel sub-tasks: { delete nodegroup \"ng-2\", delete nodegroup \"ng-1\" }, delete cluster control plane \"eksclusterdemo\" [async] } [ℹ] will delete stack \"eksctl-eksclusterdemo-nodegroup-ng-1\" [ℹ] waiting for stack \"eksctl-eksclusterdemo-nodegroup-ng-1\" to get deleted [ℹ] will delete stack \"eksctl-eksclusterdemo-nodegroup-ng-2\" [ℹ] waiting for stack \"eksctl-eksclusterdemo-nodegroup-ng-2\" to get deleted [ℹ] will delete stack \"eksctl-eksclusterdemo-cluster\" [✔] all cluster resources were deleted [rasrivas@rasrivas k8s]$ Testing ELB   creating a new cluster\n Three t2.micro In ap-south-1 (Mumbai) region  [rasrivas@rasrivas k8s]$ cat cluster.yml apiVersion: eksctl.io/v1alpha5 kind: ClusterConfig metadata: name: eksclusterdemo region: ap-south-1 nodeGroups: - name: ng-1 instanceType: t2.micro desiredCapacity: 3 [rasrivas@rasrivas k8s]$   https://docs.google.com/document/d/1vAfL0eQCXyIBC260HUMULrf10lVtZL6tqBhplyh1gR8/edit\n  we will create a deployment\n[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php deployment.apps/myweb created [rasrivas@rasrivas k8s]$   check the PODS are created\n[rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-79b48fb9f5-q4xww 1/1 Running 0 15s [rasrivas@rasrivas k8s]$   check the IP on which Node the POS is running\n[rasrivas@rasrivas k8s]$ kubectl get pods -o wide NAME READY STATUS RESTARTS AGE IP NODE NOMINATED NODE READINESS GATES myweb-79b48fb9f5-q4xww 1/1 Running 0 31s 192.168.51.165 ip-192-168-39-58.ap-south-1.compute.internal   [rasrivas@rasrivas k8s]$   we will scale for the PODS to 3 for HA\n[rasrivas@rasrivas k8s]$ kubectl scale deployment myweb --replicas=3 deployment.apps/myweb scaled [rasrivas@rasrivas k8s]$   verfiry it\n[rasrivas@rasrivas k8s]$ kubectl get all NAME READY STATUS RESTARTS AGE pod/myweb-79b48fb9f5-6dnxf 1/1 Running 0 6s pod/myweb-79b48fb9f5-klmxv 0/1 ContainerCreating 0 7s pod/myweb-79b48fb9f5-q4xww 1/1 Running 0 2m30s NAME TYPE CLUSTER-IP EXTERNAL-IP PORT(S) AGE service/kubernetes ClusterIP 10.100.0.1  443/TCP 12m NAME READY UP-TO-DATE AVAILABLE AGE deployment.apps/myweb 2/3 3 2 2m31s NAME DESIRED CURRENT READY AGE replicaset.apps/myweb-79b48fb9f5 3 3 2 2m31s [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$   creating a ELB for public access [mention the reason and the aws elb screenshot] elb_13.png\n[rasrivas@rasrivas k8s]$ kubectl expose deployment myweb --type=LoadBalancer --port=80 service/myweb exposed [rasrivas@rasrivas k8s]$   verfiy thorugh CLI\n[rasrivas@rasrivas k8s]$ kubectl get svc NAME TYPE CLUSTER-IP EXTERNAL-IP PORT(S) AGE kubernetes ClusterIP 10.100.0.1  443/TCP 18m myweb LoadBalancer 10.100.9.147 a76256b92a4654631a9daba27eff342c-302986886.ap-south-1.elb.amazonaws.com 80:32062/TCP 4m46s [rasrivas@rasrivas k8s]$   we can see **EXTERNAL-IP **\n a76256b92a4654631a9daba27eff342c-302986886.ap-south-1.elb.amazonaws.com  [rasrivas@rasrivas k8s]$ kubectl describe service/myweb Name: myweb Namespace: default Labels: app=myweb Annotations:  Selector: app=myweb Type: LoadBalancer IP: 10.100.9.147 LoadBalancer Ingress: a76256b92a4654631a9daba27eff342c-302986886.ap-south-1.elb.amazonaws.com Port:  80/TCP TargetPort: 80/TCP NodePort:  32062/TCP Endpoints: 192.168.34.88:80,192.168.51.165:80,192.168.95.135:80 Session Affinity: None External Traffic Policy: Cluster Events: Type Reason Age From Message ---- ------ ---- ---- ------- Normal EnsuringLoadBalancer 7m14s service-controller Ensuring load balancer Normal EnsuredLoadBalancer 7m12s service-controller Ensured load balancer [rasrivas@rasrivas k8s]$     also we can verify using this URL\n elb_14.png [attach]    deleting this entire deployemnt\n[rasrivas@rasrivas k8s]$ kubectl delete all --all pod \"myweb-79b48fb9f5-6dnxf\" deleted pod \"myweb-79b48fb9f5-klmxv\" deleted pod \"myweb-79b48fb9f5-q4xww\" deleted service \"kubernetes\" deleted service \"myweb\" deleted deployment.apps \"myweb\" deleted replicaset.apps \"myweb-79b48fb9f5\" deleted [rasrivas@rasrivas k8s]$   check AWS ELB thorugh console\n attache IMAGE: elb_15.png    Testing PVC   creating deplloyment\n[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php deployment.apps/myweb created [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get pods -o wide NAME READY STATUS RESTARTS AGE IP NODE NOMINATED NODE READINESS GATES myweb-79b48fb9f5-hzsdg 1/1 Running 0 40s 192.168.95.135 ip-192-168-78-153.ap-south-1.compute.internal   [rasrivas@rasrivas k8s]$   creating a ELB\n[rasrivas@rasrivas k8s]$ kubectl expose deployment myweb --type=LoadBalancer --port=80 service/myweb exposed [rasrivas@rasrivas k8s]$   logging to the container\n[rasrivas@rasrivas k8s]$ kubectl exec -it myweb-79b48fb9f5-hzsdg bash kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl kubectl exec [POD] -- [COMMAND] instead. [root@myweb-79b48fb9f5-hzsdg /]# [root@myweb-79b48fb9f5-hzsdg /]# [root@myweb-79b48fb9f5-hzsdg /]# cat /var/www/html/index.php   [root@myweb-79b48fb9f5-hzsdg /]#   crreating a index.html file\n[rasrivas@rasrivas k8s]$ cat index.html Hi this persistent data testing EKS cluster[rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$  and then we copy this file to the container, it will basically overwite the index.htm file    now if use the ELB dns name (http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/)\n attache 15 image we can see the updated code but once this POD is deleted this updated code will be deleted when the “deployment” with the help of “rs” will launch the new POD it will use the old data [rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-79b48fb9f5-hzsdg 1/1 Running 0 10m [rasrivas@rasrivas k8s]$ kubectl get deployments.apps NAME READY UP-TO-DATE AVAILABLE AGE myweb 1/1 1 1 11m [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get rs NAME DESIRED CURRENT READY AGE myweb-79b48fb9f5 1 1 1 11m [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl delete pod myweb-79b48fb9f5-hzsdg pod \"myweb-79b48fb9f5-hzsdg\" deleted [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$     so, rs will create new POD\n[rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-79b48fb9f5-2jf86 1/1 Running 0 8s [rasrivas@rasrivas k8s]$   if we check the ELB url again, it will use the old data again (http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/)\n attach picture eks_16.png    [Explain PVC, PV and SC ??????????????????????????]\n  checkig SC, by defualt it uses “gp2”\n[rasrivas@rasrivas k8s]$ kubectl get sc NAME PROVISIONER AGE gp2 (default) kubernetes.io/aws-ebs 39m [rasrivas@rasrivas k8s]$   creating pvc\n[rasrivas@rasrivas k8s]$ cat pvc.yml apiVersion: v1 kind: PersistentVolumeClaim metadata: name: pv-claim-1 spec: accessModes: - ReadWriteOnce resources: requests: storage: 5Gi [rasrivas@rasrivas k8s]$   checking it\n[rasrivas@rasrivas k8s]$ kubectl create -f pvc.yml persistentvolumeclaim/pv-claim-1 created [rasrivas@rasrivas k8s]$   descibing it == [Pending] === REASON\n[rasrivas@rasrivas k8s]$ kubectl get pvc NAME STATUS VOLUME CAPACITY ACCESS MODES STORAGECLASS AGE pv-claim-1 Pending gp2 17s [rasrivas@rasrivas k8s]$   decring the gp2\n[rasrivas@rasrivas k8s]$ kubectl describe sc gp2 Name: gp2 IsDefaultClass: Yes Annotations: kubectl.kubernetes.io/last-applied-configuration={\"apiVersion\":\"storage.k8s.io/v1\",\"kind\":\"StorageClass\",\"metadata\":{\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"},\"name\":\"gp2\"},\"parameters\":{\"fsType\":\"ext4\",\"type\":\"gp2\"},\"provisioner\":\"kubernetes.io/aws-ebs\",\"volumeBindingMode\":\"WaitForFirstConsumer\"} ,storageclass.kubernetes.io/is-default-class=true Provisioner: kubernetes.io/aws-ebs Parameters: fsType=ext4,type=gp2 AllowVolumeExpansion:  MountOptions:  ReclaimPolicy: Delete VolumeBindingMode: WaitForFirstConsumer Events:  [rasrivas@rasrivas k8s]$  its mentioned = “volumeBindingMode”:“WaitForFirstConsumer”    now, we need to the myweb deployment file\n[rasrivas@rasrivas k8s]$ kubectl edit deploy myweb   add two things:\n- name: web-vol-1 persistentVolumeClaim: claimName: pv-claim-1 volumeMounts: - mountPath: /var/www/html name: web-vol-1   where it will be done\nspec: volumes: - name: web-vol-1 persistentVolumeClaim: claimName: pv-claim-1 containers: - image: vimal13/apache-webserver-php volumeMounts: - mountPath: /var/www/html name: web-vol-1 imagePullPolicy: Always name: apache-webserver-php resources: {} terminationMessagePath: /dev/termination-log terminationMessagePolicy: File dnsPolicy: ClusterFirst restartPolicy: Always schedulerName: default-scheduler securityContext: {} terminationGracePeriodSeconds: 30     once is above code is completed, save the file and exit, we will not error\n[rasrivas@rasrivas k8s]$ kubectl edit deploy myweb deployment.apps/myweb edited [rasrivas@rasrivas k8s]$   Now, if we see the PVS status, we will see as Bound\n[rasrivas@rasrivas k8s]$ kubectl get pvc NAME STATUS VOLUME CAPACITY ACCESS MODES STORAGECLASS AGE pv-claim-1 Bound pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef 5Gi RWO gp2 9m48s [rasrivas@rasrivas k8s]$  also, we not a notice one thing, once this is done, we will see a new EBS volume of 5 gib  picture: eks_15.png      now, if we descibe our pOD will be seeing, its using PVC\n[rasrivas@rasrivas k8s]$ kubectl describe pods myweb-849b8d9fd7-7k5wn Name: myweb-849b8d9fd7-7k5wn Namespace: default Priority: 0 Node: ip-192-168-78-153.ap-south-1.compute.internal/192.168.78.153 Start Time: Sun, 05 Jul 2020 17:31:38 +0530 Labels: app=myweb pod-template-hash=849b8d9fd7 Annotations: kubernetes.io/psp: eks.privileged Status: Running IP: 192.168.95.135 IPs: IP: 192.168.95.135 Controlled By: ReplicaSet/myweb-849b8d9fd7 Containers: apache-webserver-php: Container ID: docker://990689f692a1cc607c140c157590eb46c6dc4ace0c054b05a55a18b0f2b981a5 Image: vimal13/apache-webserver-php Image ID: docker-pullable://vimal13/apache-webserver-php@sha256:faed0a5afaf9f04b6915d73f7247f6f5a71db9274ca44118d38f4601c0080a91 Port:  Host Port:  State: Running Started: Sun, 05 Jul 2020 17:31:59 +0530 Ready: True Restart Count: 0 Environment:  Mounts: /var/run/secrets/kubernetes.io/serviceaccount from default-token-prrv2 (ro) /var/www/html from web-vol-1 (rw) Conditions: Type Status Initialized True Ready True ContainersReady True PodScheduled True Volumes: web-vol-1: Type: PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace) ClaimName: pv-claim-1 ReadOnly: false default-token-prrv2: Type: Secret (a volume populated by a Secret) SecretName: default-token-prrv2 Optional: false QoS Class: BestEffort Node-Selectors:  Tolerations: node.kubernetes.io/not-ready:NoExecute for 300s node.kubernetes.io/unreachable:NoExecute for 300s Events: Type Reason Age From Message ---- ------ ---- ---- ------- Normal Scheduled 6m6s default-scheduler Successfully assigned default/myweb-849b8d9fd7-7k5wn to ip-192-168-78-153.ap-south-1.compute.internal Normal SuccessfulAttachVolume 5m59s attachdetach-controller AttachVolume.Attach succeeded for volume \"pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef\" Normal Pulling 5m47s kubelet, ip-192-168-78-153.ap-south-1.compute.internal Pulling image \"vimal13/apache-webserver-php\" Normal Pulled 5m45s kubelet, ip-192-168-78-153.ap-south-1.compute.internal Successfully pulled image \"vimal13/apache-webserver-php\" Normal Created 5m45s kubelet, ip-192-168-78-153.ap-south-1.compute.internal Created container apache-webserver-php Normal Started 5m45s kubelet, ip-192-168-78-153.ap-south-1.compute.internal Started container apache-webserver-php [rasrivas@rasrivas k8s]$ Volumes: web-vol-1: Type: PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace) ClaimName: pv-claim-1 ReadOnly: false default-token-prrv2: Type: Secret (a volume populated by a Secret) SecretName: default-token-prrv2 Optional: false   if we check our ELB nothing will be there now (http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/)\n PICUTURE eks_17.png    now, if we copy data to the PODS, it will e permanent as it will be saved on the EBS vol\n[rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-849b8d9fd7-7k5wn 1/1 Running 0 9m30s [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl cp index.html myweb-849b8d9fd7-7k5wn:/var/www/html/index.html [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$   now, again, we check the ELB dns, we will see the data\n PICUTE 18 also we can verify by CLI using curl  [rasrivas@rasrivas k8s]$ curl a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com Hi this persistent data testing EKS cluster[rasrivas@rasrivas k8s]$     now if we delete the POS, and again “rs” using deployemnt create the POD this data will be availabe\n[rasrivas@rasrivas k8s]$ kubectl delete pods myweb-849b8d9fd7-7k5wn pod \"myweb-849b8d9fd7-7k5wn\" deleted [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get pods NAME READY STATUS RESTARTS AGE myweb-849b8d9fd7-p7bch 1/1 Running 0 34s   now, we again see the ELB url, we can see the same data\n[rasrivas@rasrivas k8s]$ curl a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com Hi this persistent data testing EKS cluster[rasrivas@rasrivas k8s]$   we can also change the storage class   we want to change the storage type from gp2 to io1\n  by deault RECLAIM POLICY us Delete and STORAGECLASS is gp2\n[rasrivas@rasrivas k8s]$ kubectl get pv NAME CAPACITY ACCESS MODES RECLAIM POLICY STATUS CLAIM STORAGECLASS REASON AGE pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef 5Gi RWO Delete Bound default/pv-claim-1 gp2 21m [rasrivas@rasrivas k8s]$   deleting old deployment\n[rasrivas@rasrivas k8s]$ kubectl delete deployments.apps --all deployment.apps \"myweb\" deleted [rasrivas@rasrivas k8s]$   delete the PVC\n[rasrivas@rasrivas k8s]$ kubectl get pvc NAME STATUS VOLUME CAPACITY ACCESS MODES STORAGECLASS AGE pv-claim-1 Bound pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef 5Gi RWO gp2 31m [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl delete pvc --all persistentvolumeclaim \"pv-claim-1\" deleted [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$ kubectl get pvc No resources found in default namespace. [rasrivas@rasrivas k8s]$   here I am creating type with io1 and also we will use Reclaim policy as retain, volume will not be deleted when the entire cluster is deleted\n[rasrivas@rasrivas k8s]$ cat sc.yml apiVersion: storage.k8s.io/v1 kind: StorageClass metadata: name: ekssc1 provisioner: kubernetes.io/aws-eks parameters: type: io1 reclaimPolicy: Retain [rasrivas@rasrivas k8s]$   creating it\n[rasrivas@rasrivas k8s]$ kubectl create -f sc.yml storageclass.storage.k8s.io/ekssc1 created [rasrivas@rasrivas k8s]$ [rasrivas@rasrivas k8s]$   now we will see we will have two SC, but the defualt is gp2\n[rasrivas@rasrivas k8s]$ kubectl get sc NAME PROVISIONER AGE ekssc1 kubernetes.io/aws-eks 6s gp2 (default) kubernetes.io/aws-ebs 74m [rasrivas@rasrivas k8s]$   now, we will say our pvc config file to use ekssc1 SC\n[rasrivas@rasrivas k8s]$ cat pvc.yml apiVersion: v1 kind: PersistentVolumeClaim metadata: name: pv-claim-1 spec: storageClassName: ekssc1 accessModes: - ReadWriteOnce resources: requests: storage: 5Gi [rasrivas@rasrivas k8s]$   creating PVC which will use ekssc1 SC\n[rasrivas@rasrivas k8s]$ kubectl create -f pvc.yml persistentvolumeclaim/pv-claim-1 created [rasrivas@rasrivas k8s]$   ",
+  "wordCount" : "3257",
+  "inLanguage": "en",
+  "datePublished": "2022-05-08T18:52:59+05:30",
+  "dateModified": "2022-05-08T18:52:59+05:30",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://rasrivas.in/posts/aws_eks_eksctl/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rahul Srivastava",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://rasrivas.in/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://rasrivas.in/" accesskey="h" title="Rahul Srivastava (Alt + H)">Rahul Srivastava</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://rasrivas.in/categories" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://rasrivas.in/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://rasrivas.in/archives" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://rasrivas.in/">Home</a>&nbsp;»&nbsp;<a href="https://rasrivas.in/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Setup an AWS EKS cluster with eksctl
+    </h1>
+    <div class="post-meta"><span title='2022-05-08 18:52:59 +0530 IST'>May 8, 2022</span>&nbsp;·&nbsp;16 min
+
+</div>
+  </header> 
+  <div class="post-content"><p>eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon&rsquo;s managed Kubernetes service for EC2.</p>
+<p>It is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.</p>
+<p><a href="https://eksctl.io/">eksctl</a>
+<a href="https://github.com/rasrivastava/aws_eks">Github project</a></p>
+<h1 id="details-course-content">Details Course Content:<a hidden class="anchor" aria-hidden="true" href="#details-course-content">#</a></h1>
+<ul>
+<li>
+<p>Setup an AWS EKS cluster with eksctl</p>
+<ul>
+<li>Architecture &amp; Create EKS Cluster with eksctl</li>
+</ul>
+</li>
+<li>
+<p>Developing for EKS</p>
+<ul>
+<li>Understanding the Application Architecture</li>
+<li>Building from Source</li>
+<li>Publishing to ECR</li>
+<li>Deploying to EKS</li>
+<li>Deploying an Application to EKS</li>
+</ul>
+</li>
+<li>
+<p>AWS EKS operations using eksctl</p>
+<ul>
+<li>NodeGroups &amp; Spot Instances</li>
+<li>Cluster AutoScaler Theory</li>
+<li>CloudWatch Logging for EKS Cluster Services</li>
+<li>CloudWatch Containers Insights for EKS</li>
+</ul>
+</li>
+<li>
+<p>Helm Package Manager on EKS</p>
+<ul>
+<li>Helm installation</li>
+</ul>
+</li>
+<li>
+<p>Managing Users &amp; RBAC in EKS</p>
+<ul>
+<li>Adding an Admin User in EKS</li>
+<li>Adding a Read-Only User in EKS</li>
+</ul>
+</li>
+<li>
+<p>Deploy the Kubernetes Dashboard</p>
+<ul>
+<li>What is the K8s dashboard ?</li>
+<li>Install Kubernetes Metrics Server in EKS</li>
+<li>Deploy &amp; Explore the Kubernetes Dashboard in EKS</li>
+</ul>
+</li>
+<li>
+<p>Deploy a stateless sample app</p>
+<ul>
+<li>Deploy backend &amp; frontend resources</li>
+<li>Scaling Pods up and down</li>
+</ul>
+</li>
+<li>
+<p>Deploy a stateful app - using Amazon EBS</p>
+<ul>
+<li>Stateful App Intro &amp; Architecture</li>
+<li>Create namespace</li>
+<li>Create physical volume</li>
+<li>Deploy MySQL backend</li>
+<li>Deployment vs StatefulSet with persistent volumes</li>
+<li>Deploy Wordpress via Deployment &amp; StatefulSet</li>
+</ul>
+</li>
+<li>
+<p>Deploy a stateful app - using Amazon EFS</p>
+<ul>
+<li>EFS for Kubernetes</li>
+<li>Enable EFS</li>
+<li>Create namespace &amp; prepare storage</li>
+<li>Deploy MySQL backend &amp; Wordpress frontend/li&gt;</li>
+</ul>
+</li>
+<li>
+<p>Fargate on EKS</p>
+<ul>
+<li>Fargate on EKS</li>
+<li>Create a Fargate Cluster on EKS</li>
+<li>Add the Fargate Capability to an existing EKS cluster</li>
+</ul>
+</li>
+</ul>
+<h1 id="install-the-aws-cli-command-if-not-installed">Install the aws cli command if not installed<a hidden class="anchor" aria-hidden="true" href="#install-the-aws-cli-command-if-not-installed">#</a></h1>
+<ul>
+<li>
+<p>For my case its installed</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas eks]$ aws --version
+aws-cli/1.18.69 Python/2.7.17 Linux/5.3.11-100.fc29.x86_64 botocore/1.16.19
+[rasrivas@rasrivas eks]$
+</code></pre></li>
+<li>
+<p>if not installed (<a href="https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html">https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html</a>)</p>
+<pre tabindex="0"><code>curl &#34;https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip&#34; -o &#34;awscliv2.zip&#34;
+unzip awscliv2.zip
+sudo ./aws/install
+</code></pre><pre tabindex="0"><code>pip3 install --upgrade --user awscli
+</code></pre><ul>
+<li>then you need to configure your credentials
+<pre tabindex="0"><code>$ aws configure
+AWS Access Key ID [None]: XXXXXXXXXXXXXXXXXXXXXX
+AWS Secret Access Key [None]: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Default region name [None]: region-code
+Default output format [None]: json
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<h1 id="let-list-all-the-aws-eks-cluster-running">Let list all the AWS EKS cluster running<a hidden class="anchor" aria-hidden="true" href="#let-list-all-the-aws-eks-cluster-running">#</a></h1>
+<ul>
+<li>Currently no cluster will be running
+<pre tabindex="0"><code>[rasrivas@rasrivas eks]$ aws eks list-clusters
+{
+    &#34;clusters&#34;: []
+}
+[rasrivas@rasrivas eks]$
+</code></pre></li>
+</ul>
+<h1 id="limitations-of-aws-eks-command">Limitations of AWS EKS command<a hidden class="anchor" aria-hidden="true" href="#limitations-of-aws-eks-command">#</a></h1>
+<ul>
+<li>we can&rsquo;t specify multiple instances types for the slave notes</li>
+<li>we can&rsquo;t use the spot type instance</li>
+<li>many more</li>
+</ul>
+<h1 id="using-eksctl-command-for-aws-eks-management">Using eksctl command for AWS EKS management<a hidden class="anchor" aria-hidden="true" href="#using-eksctl-command-for-aws-eks-management">#</a></h1>
+<ul>
+<li>Installing <strong>eksctl</strong> package (<a href="https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html">https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html</a>)
+<pre tabindex="0"><code>[rasrivas@rasrivas eks]$ curl --silent --location &#34;https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz&#34; | tar xz -C /tmp
+[rasrivas@rasrivas eks]$ sudo mv /tmp/eksctl /usr/local/bin
+[rasrivas@rasrivas eks]$ eksctl version
+0.23.0
+[rasrivas@rasrivas eks]$
+</code></pre></li>
+</ul>
+<h1 id="deployming-aws-eks-cluster">Deployming AWS EKS cluster<a hidden class="anchor" aria-hidden="true" href="#deployming-aws-eks-cluster">#</a></h1>
+<ul>
+<li>
+<p>For this demo we are creating three slave nodes</p>
+<ul>
+<li>2 instances = t2.micro</li>
+<li>1 instance = t2.small</li>
+</ul>
+</li>
+<li>
+<p>For for creating the above cluster we need to create yaml file</p>
+<ul>
+<li>for this we will use <strong>ClusterConfig</strong> k8s kind</li>
+<li>these groups of instance of similar types are called as <strong>nodegroups</strong></li>
+</ul>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ cat cluster.yml 
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eksclusterdemo
+  region: ap-southeast-1
+
+nodeGroups:
+  - name: ng-1
+    instanceType: t2.micro
+    desiredCapacity: 2
+  - name: ng-2 
+    instanceType: t2.small
+    desiredCapacity: 1
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>Create the cluster using <strong>cluster.yml</strong> file (generally it takes approx 15 minutes for the configuration)</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ eksctl create cluster -f cluster.yml 
+[ℹ]  eksctl version 0.23.0
+[ℹ]  using region ap-southeast-1
+[ℹ]  setting availability zones to [ap-southeast-1a ap-southeast-1c ap-southeast-1b]
+[ℹ]  subnets for ap-southeast-1a - public:192.168.0.0/19 private:192.168.96.0/19
+[ℹ]  subnets for ap-southeast-1c - public:192.168.32.0/19 private:192.168.128.0/19
+[ℹ]  subnets for ap-southeast-1b - public:192.168.64.0/19 private:192.168.160.0/19
+[ℹ]  nodegroup &#34;ng-1&#34; will use &#34;ami-0eca92b64847fff2a&#34; [AmazonLinux2/1.16]
+[ℹ]  nodegroup &#34;ng-2&#34; will use &#34;ami-0eca92b64847fff2a&#34; [AmazonLinux2/1.16]
+[ℹ]  using Kubernetes version 1.16
+[ℹ]  creating EKS cluster &#34;eksclusterdemo&#34; in &#34;ap-southeast-1&#34; region with un-managed nodes
+[ℹ]  2 nodegroups (ng-1, ng-2) were included (based on the include/exclude rules)
+[ℹ]  will create a CloudFormation stack for cluster itself and 2 nodegroup stack(s)
+[ℹ]  will create a CloudFormation stack for cluster itself and 0 managed nodegroup stack(s)
+[ℹ]  if you encounter any issues, check CloudFormation console or try &#39;eksctl utils describe-stacks --region=ap-southeast-1 --cluster=eksclusterdemo&#39;
+[ℹ]  CloudWatch logging will not be enabled for cluster &#34;eksclusterdemo&#34; in &#34;ap-southeast-1&#34;
+[ℹ]  you can enable it with &#39;eksctl utils update-cluster-logging --region=ap-southeast-1 --cluster=eksclusterdemo&#39;
+[ℹ]  Kubernetes API endpoint access will use default of {publicAccess=true, privateAccess=false} for cluster &#34;eksclusterdemo&#34; in &#34;ap-southeast-1&#34;
+[ℹ]  2 sequential tasks: { create cluster control plane &#34;eksclusterdemo&#34;, 2 sequential sub-tasks: { no tasks, 2 parallel sub-tasks: { create nodegroup &#34;ng-1&#34;, create nodegroup &#34;ng-2&#34; } } }
+[ℹ]  building cluster stack &#34;eksctl-eksclusterdemo-cluster&#34;
+[ℹ]  deploying stack &#34;eksctl-eksclusterdemo-cluster&#34;
+[ℹ]  building nodegroup stack &#34;eksctl-eksclusterdemo-nodegroup-ng-2&#34;
+[ℹ]  building nodegroup stack &#34;eksctl-eksclusterdemo-nodegroup-ng-1&#34;
+[ℹ]  --nodes-min=2 was set automatically for nodegroup ng-1
+[ℹ]  --nodes-max=2 was set automatically for nodegroup ng-1
+[ℹ]  --nodes-min=1 was set automatically for nodegroup ng-2
+[ℹ]  --nodes-max=1 was set automatically for nodegroup ng-2
+[ℹ]  deploying stack &#34;eksctl-eksclusterdemo-nodegroup-ng-1&#34;
+[ℹ]  deploying stack &#34;eksctl-eksclusterdemo-nodegroup-ng-2&#34;
+[ℹ]  waiting for the control plane availability...
+[✔]  saved kubeconfig as &#34;/home/rasrivas/.kube/config&#34;
+[ℹ]  no tasks
+[✔]  all EKS cluster resources for &#34;eksclusterdemo&#34; have been created
+[ℹ]  adding identity &#34;arn:aws:iam::350276982418:role/eksctl-eksclusterdemo-nodegroup-n-NodeInstanceRole-1S9H477T7LL0B&#34; to auth ConfigMap
+[ℹ]  nodegroup &#34;ng-1&#34; has 0 node(s)
+[ℹ]  waiting for at least 2 node(s) to become ready in &#34;ng-1&#34;
+[ℹ]  nodegroup &#34;ng-1&#34; has 2 node(s)
+[ℹ]  node &#34;ip-192-168-50-40.ap-southeast-1.compute.internal&#34; is ready
+[ℹ]  node &#34;ip-192-168-70-91.ap-southeast-1.compute.internal&#34; is ready
+[ℹ]  adding identity &#34;arn:aws:iam::350276982418:role/eksctl-eksclusterdemo-nodegroup-n-NodeInstanceRole-JJNSN2MGFW1V&#34; to auth ConfigMap
+[ℹ]  nodegroup &#34;ng-2&#34; has 0 node(s)
+[ℹ]  waiting for at least 1 node(s) to become ready in &#34;ng-2&#34;
+[ℹ]  nodegroup &#34;ng-2&#34; has 1 node(s)
+[ℹ]  node &#34;ip-192-168-42-119.ap-southeast-1.compute.internal&#34; is ready
+[ℹ]  kubectl command should work with &#34;/home/rasrivas/.kube/config&#34;, try &#39;kubectl get nodes&#39;
+[✔]  EKS cluster &#34;eksclusterdemo&#34; in &#34;ap-southeast-1&#34; region is ready
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>we can notice few things from the creating the cluster</p>
+<ul>
+<li><strong>eksctl</strong> command deploy the infrastructure using AWS cloudformation
+<pre tabindex="0"><code>ℹ]  will create a CloudFormation stack for cluster itself and 2 nodegroup stack(s)
+[ℹ]  will create a CloudFormation stack for cluster itself and 0 managed nodegroup stack(s)
+-------
+-------
+[ℹ]  deploying stack &#34;eksctl-eksclusterdemo-cluster&#34;
+</code></pre></li>
+<li><strong>eksctl</strong> in will launch 3 EC instances during this setup for the slave node and a master node will also be created but it will internally managed by AWS</li>
+<li><strong>eksctl</strong> will create some more resources such as <strong>VPC, subnet, users, policies</strong> etc</li>
+</ul>
+</li>
+<li>
+<p>its created succesfully and we can verify it:</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ aws eks list-clusters --region ap-southeast-1
+{
+    &#34;clusters&#34;: [
+        &#34;eksclusterdemo&#34;
+    ]
+}
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+</ul>
+<h1 id="now-we-need-to-connect-to-cluster">Now, we need to connect to cluster<a hidden class="anchor" aria-hidden="true" href="#now-we-need-to-connect-to-cluster">#</a></h1>
+<ul>
+<li>
+<p>we can connect to the cluster using kubectl command</p>
+<ul>
+<li>kubectl command required a <strong>config</strong> file</li>
+</ul>
+</li>
+<li>
+<p>we can generate it if it&rsquo;s not available, but for my case its available</p>
+<pre tabindex="0"><code>$ kubectl config view
+</code></pre><pre tabindex="0"><code>$ aws eks --region ap-southeast-1 update-kubeconfig --name eksclusterdemo
+</code></pre></li>
+</ul>
+<h1 id="checking-the-cluster">Checking the cluster<a hidden class="anchor" aria-hidden="true" href="#checking-the-cluster">#</a></h1>
+<ul>
+<li>we can cluster info
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl cluster-info 
+Kubernetes master is running at https://7A9EFAED3294394617D9F9DF696FE746.gr7.ap-southeast-1.eks.amazonaws.com
+CoreDNS is running at https://7A9EFAED3294394617D9F9DF696FE746.gr7.ap-southeast-1.eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use &#39;kubectl cluster-info dump&#39;.
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>we can check the number of nodes present in the pod
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get nodes
+NAME                                                STATUS   ROLES    AGE     VERSION
+ip-192-168-42-119.ap-southeast-1.compute.internal   Ready    &lt;none&gt;   9m30s   v1.16.8-eks-fd1ea7
+ip-192-168-50-40.ap-southeast-1.compute.internal    Ready    &lt;none&gt;   10m     v1.16.8-eks-fd1ea7
+ip-192-168-70-91.ap-southeast-1.compute.internal    Ready    &lt;none&gt;   10m     v1.16.8-eks-fd1ea7
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+</ul>
+<h1 id="creating-name-space">Creating name space<a hidden class="anchor" aria-hidden="true" href="#creating-name-space">#</a></h1>
+<ul>
+<li>
+<p>its always a good a separate name space for the cluster related deployment</p>
+</li>
+<li>
+<p>checking the all the namespace</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get ns
+NAME              STATUS   AGE
+default           Active   22m
+kube-node-lease   Active   22m
+kube-public       Active   22m
+kube-system       Active   22m
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>creating a new name space</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create namespace eksns
+namespace/eksns created
+[rasrivas@rasrivas k8s]$ 
+</code></pre><pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get ns | grep eksns
+eksns             Active   11s
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>by default, <strong>default</strong> name space will be used, it use <strong>eksns</strong> name space by default</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl config set-context --current --namespace=eksns
+Context &#34;iam-root-account@eksclusterdemo.ap-southeast-1.eksctl.io&#34; modified.
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>verifying it</p>
+<pre tabindex="0"><code>rasrivas@rasrivas k8s]$ kubectl config view | grep eksns
+  namespace: eksns
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+</ul>
+<h1 id="creating-deployment">Creating deployment<a hidden class="anchor" aria-hidden="true" href="#creating-deployment">#</a></h1>
+<ul>
+<li>
+<p>creating deployment</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php
+deployment.apps/myweb created
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>verfiying it</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+myweb-79b48fb9f5-5mgjm   1/1     Running   0          33s
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>Lets scale it to 3 PODS</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl scale deployment myweb --replicas=3
+deployment.apps/myweb scaled
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>lets check on which nodes the PODS are running</p>
+<ul>
+<li>we will the three PODS will be running on all the three nodes</li>
+</ul>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods -o wide
+NAME                     READY   STATUS    RESTARTS   AGE     IP               NODE                                                NOMINATED NODE   READINESS GATES
+myweb-79b48fb9f5-5mgjm   1/1     Running   0          2m31s   192.168.36.3     ip-192-168-42-119.ap-southeast-1.compute.internal   &lt;none&gt;           &lt;none&gt;
+myweb-79b48fb9f5-9clvj   1/1     Running   0          69s     192.168.45.132   ip-192-168-42-119.ap-southeast-1.compute.internal   &lt;none&gt;           &lt;none&gt;
+myweb-79b48fb9f5-wm65z   1/1     Running   0          69s     192.168.83.60    ip-192-168-70-91.ap-southeast-1.compute.internal    &lt;none&gt;           &lt;none&gt;
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+</ul>
+<h1 id="elb-setip">ELB setip<a hidden class="anchor" aria-hidden="true" href="#elb-setip">#</a></h1>
+<ul>
+<li>
+<p>current cluster is by default using <strong>Node Port</strong> service</p>
+<ul>
+<li>we know <strong>Node Port</strong> service is only reachable to internal network</li>
+<li>to avail the external connectivity we need to add an <strong>ELB</strong></li>
+</ul>
+</li>
+<li>
+<p>Advantages of ELB:</p>
+<ul>
+<li>A</li>
+<li>B</li>
+</ul>
+</li>
+<li>
+<p>creating an ELB for the deployment</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl expose deployment myweb --type=LoadBalancer --port=80
+service/myweb exposed
+[rasrivas@rasrivas k8s]$
+</code></pre><ul>
+<li>
+<p>at the &hellip;&hellip;</p>
+</li>
+<li>
+<p>deleting everyting</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl delete all --all
+pod &#34;myweb-79b48fb9f5-5mgjm&#34; deleted
+pod &#34;myweb-79b48fb9f5-9clvj&#34; deleted
+pod &#34;myweb-79b48fb9f5-wm65z&#34; deleted
+service &#34;myweb&#34; deleted
+deployment.apps &#34;myweb&#34; deleted
+replicaset.apps &#34;myweb-79b48fb9f5&#34; deleted
+[rasrivas@rasrivas k8s]$ 
+</code></pre><ul>
+<li>auto AWS elb will be deleted</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="pvc">PVC<a hidden class="anchor" aria-hidden="true" href="#pvc">#</a></h1>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create -f pvc.yml 
+persistentvolumeclaim/pv-claim-1 created
+[rasrivas@rasrivas k8s]$
+</code></pre><pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pvc
+NAME         STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pv-claim-1   Pending                                      gp2            77s
+[rasrivas@rasrivas k8s]$ kubectl get pv
+No resources found in eksns namespace.
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ kubectl get sc
+NAME            PROVISIONER             AGE
+gp2 (default)   kubernetes.io/aws-ebs   44m
+[rasrivas@rasrivas k8s]$
+</code></pre><pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php
+
+deployment.apps/myweb created
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+myweb-79b48fb9f5-xqjzj   1/1     Running   0          8s
+[rasrivas@rasrivas k8s]$
+</code></pre><pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ eksctl delete cluster -f cluster.yml 
+[ℹ]  eksctl version 0.23.0
+[ℹ]  using region ap-southeast-1
+[ℹ]  deleting EKS cluster &#34;eksclusterdemo&#34;
+[ℹ]  deleted 0 Fargate profile(s)
+[✔]  kubeconfig has been updated
+[ℹ]  cleaning up LoadBalancer services
+[ℹ]  2 sequential tasks: { 2 parallel sub-tasks: { delete nodegroup &#34;ng-2&#34;, delete nodegroup &#34;ng-1&#34; }, delete cluster control plane &#34;eksclusterdemo&#34; [async] }
+[ℹ]  will delete stack &#34;eksctl-eksclusterdemo-nodegroup-ng-1&#34;
+[ℹ]  waiting for stack &#34;eksctl-eksclusterdemo-nodegroup-ng-1&#34; to get deleted
+[ℹ]  will delete stack &#34;eksctl-eksclusterdemo-nodegroup-ng-2&#34;
+[ℹ]  waiting for stack &#34;eksctl-eksclusterdemo-nodegroup-ng-2&#34; to get deleted
+[ℹ]  will delete stack &#34;eksctl-eksclusterdemo-cluster&#34;
+[✔]  all cluster resources were deleted
+[rasrivas@rasrivas k8s]$
+</code></pre><h1 id="testing-elb">Testing ELB<a hidden class="anchor" aria-hidden="true" href="#testing-elb">#</a></h1>
+<ul>
+<li>
+<p>creating a new cluster</p>
+<ul>
+<li>Three <strong>t2.micro</strong></li>
+<li>In <strong>ap-south-1</strong> (Mumbai) region</li>
+</ul>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ cat cluster.yml 
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eksclusterdemo
+  region: ap-south-1
+
+nodeGroups:
+  - name: ng-1
+    instanceType: t2.micro
+    desiredCapacity: 3
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p><a href="https://docs.google.com/document/d/1vAfL0eQCXyIBC260HUMULrf10lVtZL6tqBhplyh1gR8/edit">https://docs.google.com/document/d/1vAfL0eQCXyIBC260HUMULrf10lVtZL6tqBhplyh1gR8/edit</a></p>
+</li>
+<li>
+<p>we will create a deployment</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php
+deployment.apps/myweb created
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>check the PODS are created</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+myweb-79b48fb9f5-q4xww   1/1     Running   0          15s
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>check the IP on which Node the POS is running</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods -o wide
+NAME                     READY   STATUS    RESTARTS   AGE   IP               NODE                                           NOMINATED NODE   READINESS GATES
+myweb-79b48fb9f5-q4xww   1/1     Running   0          31s   192.168.51.165   ip-192-168-39-58.ap-south-1.compute.internal   &lt;none&gt;           &lt;none&gt;
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>we will scale for the PODS to 3 for HA</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl scale deployment myweb --replicas=3
+deployment.apps/myweb scaled
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>verfiry it</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get all
+NAME                         READY   STATUS              RESTARTS   AGE
+pod/myweb-79b48fb9f5-6dnxf   1/1     Running             0          6s
+pod/myweb-79b48fb9f5-klmxv   0/1     ContainerCreating   0          7s
+pod/myweb-79b48fb9f5-q4xww   1/1     Running             0          2m30s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.100.0.1   &lt;none&gt;        443/TCP   12m
+
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/myweb   2/3     3            2           2m31s
+
+NAME                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/myweb-79b48fb9f5   3         3         2       2m31s
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>creating a ELB for public access [mention the reason and the aws elb screenshot] elb_13.png</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl expose deployment myweb  --type=LoadBalancer --port=80
+service/myweb exposed
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>verfiy thorugh CLI</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get svc
+NAME         TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)        AGE
+kubernetes   ClusterIP      10.100.0.1     &lt;none&gt;                                                                    443/TCP        18m
+myweb        LoadBalancer   10.100.9.147   a76256b92a4654631a9daba27eff342c-302986886.ap-south-1.elb.amazonaws.com   80:32062/TCP   4m46s
+[rasrivas@rasrivas k8s]$ 
+</code></pre><ul>
+<li>
+<p>we can see **EXTERNAL-IP **</p>
+<ul>
+<li><strong>a76256b92a4654631a9daba27eff342c-302986886.ap-south-1.elb.amazonaws.com</strong></li>
+</ul>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl describe service/myweb
+Name:                     myweb
+Namespace:                default
+Labels:                   app=myweb
+Annotations:              &lt;none&gt;
+Selector:                 app=myweb
+Type:                     LoadBalancer
+IP:                       10.100.9.147
+LoadBalancer Ingress:     a76256b92a4654631a9daba27eff342c-302986886.ap-south-1.elb.amazonaws.com
+Port:                     &lt;unset&gt;  80/TCP
+TargetPort:               80/TCP
+NodePort:                 &lt;unset&gt;  32062/TCP
+Endpoints:                192.168.34.88:80,192.168.51.165:80,192.168.95.135:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:
+  Type    Reason                Age    From                Message
+  ----    ------                ----   ----                -------
+  Normal  EnsuringLoadBalancer  7m14s  service-controller  Ensuring load balancer
+  Normal  EnsuredLoadBalancer   7m12s  service-controller  Ensured load balancer
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>also we can verify using this URL</p>
+<ul>
+<li>elb_14.png [attach]</li>
+</ul>
+</li>
+<li>
+<p>deleting this entire deployemnt</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl delete all --all
+pod &#34;myweb-79b48fb9f5-6dnxf&#34; deleted
+pod &#34;myweb-79b48fb9f5-klmxv&#34; deleted
+pod &#34;myweb-79b48fb9f5-q4xww&#34; deleted
+service &#34;kubernetes&#34; deleted
+service &#34;myweb&#34; deleted
+deployment.apps &#34;myweb&#34; deleted
+replicaset.apps &#34;myweb-79b48fb9f5&#34; deleted
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>check AWS ELB thorugh console</p>
+<ul>
+<li>attache IMAGE: elb_15.png</li>
+</ul>
+</li>
+</ul>
+<h1 id="testing-pvc">Testing PVC<a hidden class="anchor" aria-hidden="true" href="#testing-pvc">#</a></h1>
+<ul>
+<li>
+<p>creating deplloyment</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create deployment myweb --image=vimal13/apache-webserver-php
+deployment.apps/myweb created
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+</code></pre><pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods -o wide
+NAME                     READY   STATUS    RESTARTS   AGE   IP               NODE                                            NOMINATED NODE   READINESS GATES
+myweb-79b48fb9f5-hzsdg   1/1     Running   0          40s   192.168.95.135   ip-192-168-78-153.ap-south-1.compute.internal   &lt;none&gt;           &lt;none&gt;
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>creating a ELB</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl expose deployment myweb  --type=LoadBalancer --port=80
+service/myweb exposed
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>logging to the container</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl exec -it myweb-79b48fb9f5-hzsdg bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl kubectl exec [POD] -- [COMMAND] instead.
+[root@myweb-79b48fb9f5-hzsdg /]# 
+[root@myweb-79b48fb9f5-hzsdg /]# 
+[root@myweb-79b48fb9f5-hzsdg /]# cat /var/www/html/index.php 
+&lt;body bgcolor=&#39;aqua&#39;&gt;
+&lt;pre&gt;
+
+&lt;?php
+
+print &#34;welcome to vimal web server for testing&#34;;
+
+
+print `ifconfig`;
+
+?&gt;
+
+&lt;/pre&gt;
+[root@myweb-79b48fb9f5-hzsdg /]#
+</code></pre></li>
+<li>
+<p>crreating a index.html file</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ cat index.html 
+ Hi this persistent data testing EKS cluster[rasrivas@rasrivas k8s]$ 
+ [rasrivas@rasrivas k8s]$ 
+ [rasrivas@rasrivas k8s]$
+</code></pre><ul>
+<li>and then we copy this file to the container, it will basically overwite the index.htm file</li>
+</ul>
+</li>
+<li>
+<p>now if use the ELB dns name (<a href="http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/">http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/</a>)</p>
+<ul>
+<li>attache 15 image</li>
+<li>we can see the updated code</li>
+<li>but once this POD is deleted this updated code will be deleted</li>
+<li>when the &ldquo;deployment&rdquo; with the help of &ldquo;rs&rdquo; will launch the new POD it will use the old data
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+myweb-79b48fb9f5-hzsdg   1/1     Running   0          10m
+[rasrivas@rasrivas k8s]$ kubectl get deployments.apps 
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+myweb   1/1     1            1           11m
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ kubectl get rs
+NAME               DESIRED   CURRENT   READY   AGE
+myweb-79b48fb9f5   1         1         1       11m
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ kubectl delete pod myweb-79b48fb9f5-hzsdg
+pod &#34;myweb-79b48fb9f5-hzsdg&#34; deleted
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>so, rs will create new POD</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods
+ NAME                     READY   STATUS    RESTARTS   AGE
+ myweb-79b48fb9f5-2jf86   1/1     Running   0          8s
+ [rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>if we check the ELB url again, it will use the old data again (<a href="http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/">http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/</a>)</p>
+<ul>
+<li>attach picture eks_16.png</li>
+</ul>
+</li>
+<li>
+<p>[Explain PVC, PV and SC ??????????????????????????]</p>
+</li>
+<li>
+<p>checkig SC, by defualt it uses &ldquo;gp2&rdquo;</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get sc
+NAME            PROVISIONER             AGE
+gp2 (default)   kubernetes.io/aws-ebs   39m
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>creating pvc</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ cat pvc.yml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-claim-1
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>checking it</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create -f pvc.yml 
+persistentvolumeclaim/pv-claim-1 created
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>descibing it ==&gt; [Pending] ===&gt; REASON</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pvc
+NAME         STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pv-claim-1   Pending                                      gp2            17s
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>decring the gp2</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl describe sc gp2
+Name:            gp2
+IsDefaultClass:  Yes
+Annotations:     kubectl.kubernetes.io/last-applied-configuration={&#34;apiVersion&#34;:&#34;storage.k8s.io/v1&#34;,&#34;kind&#34;:&#34;StorageClass&#34;,&#34;metadata&#34;:{&#34;annotations&#34;:{&#34;storageclass.kubernetes.io/is-default-class&#34;:&#34;true&#34;},&#34;name&#34;:&#34;gp2&#34;},&#34;parameters&#34;:{&#34;fsType&#34;:&#34;ext4&#34;,&#34;type&#34;:&#34;gp2&#34;},&#34;provisioner&#34;:&#34;kubernetes.io/aws-ebs&#34;,&#34;volumeBindingMode&#34;:&#34;WaitForFirstConsumer&#34;}
+,storageclass.kubernetes.io/is-default-class=true
+Provisioner:           kubernetes.io/aws-ebs
+Parameters:            fsType=ext4,type=gp2
+AllowVolumeExpansion:  &lt;unset&gt;
+MountOptions:          &lt;none&gt;
+ReclaimPolicy:         Delete
+VolumeBindingMode:     WaitForFirstConsumer
+Events:                &lt;none&gt;
+[rasrivas@rasrivas k8s]$
+</code></pre><ul>
+<li>its mentioned =&gt; <strong>&ldquo;volumeBindingMode&rdquo;:&ldquo;WaitForFirstConsumer&rdquo;</strong></li>
+</ul>
+</li>
+<li>
+<p>now, we need to the <strong>myweb</strong> deployment file</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl edit deploy myweb
+</code></pre><ul>
+<li>
+<p>add two things:</p>
+<pre tabindex="0"><code>- name: web-vol-1
+    persistentVolumeClaim:
+      claimName: pv-claim-1
+</code></pre><pre tabindex="0"><code>volumeMounts:
+    - mountPath: /var/www/html
+      name: web-vol-1
+</code></pre></li>
+<li>
+<p>where it will be done</p>
+<pre tabindex="0"><code>spec:
+  volumes:
+  - name: web-vol-1
+    persistentVolumeClaim:
+      claimName: pv-claim-1
+  containers:
+  - image: vimal13/apache-webserver-php
+    volumeMounts:
+    - mountPath: /var/www/html
+      name: web-vol-1
+    imagePullPolicy: Always
+    name: apache-webserver-php
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  terminationGracePeriodSeconds: 30
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>once is above code is completed, save the file and exit, we will not error</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl edit deploy myweb 
+deployment.apps/myweb edited
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>Now, if we see the PVS status, we will see as <strong>Bound</strong></p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pvc
+NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pv-claim-1   Bound    pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef   5Gi        RWO            gp2            9m48s
+[rasrivas@rasrivas k8s]$ 
+</code></pre><ul>
+<li>also, we not a notice one thing, once this is done, we will see a new EBS volume of 5 gib
+<ul>
+<li>picture: eks_15.png</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>now, if we descibe our pOD will be seeing, its using PVC</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl describe pods myweb-849b8d9fd7-7k5wn
+Name:         myweb-849b8d9fd7-7k5wn
+Namespace:    default
+Priority:     0
+Node:         ip-192-168-78-153.ap-south-1.compute.internal/192.168.78.153
+Start Time:   Sun, 05 Jul 2020 17:31:38 +0530
+Labels:       app=myweb
+              pod-template-hash=849b8d9fd7
+Annotations:  kubernetes.io/psp: eks.privileged
+Status:       Running
+IP:           192.168.95.135
+IPs:
+  IP:           192.168.95.135
+Controlled By:  ReplicaSet/myweb-849b8d9fd7
+Containers:
+  apache-webserver-php:
+    Container ID:   docker://990689f692a1cc607c140c157590eb46c6dc4ace0c054b05a55a18b0f2b981a5
+    Image:          vimal13/apache-webserver-php
+    Image ID:       docker-pullable://vimal13/apache-webserver-php@sha256:faed0a5afaf9f04b6915d73f7247f6f5a71db9274ca44118d38f4601c0080a91
+    Port:           &lt;none&gt;
+    Host Port:      &lt;none&gt;
+    State:          Running
+      Started:      Sun, 05 Jul 2020 17:31:59 +0530
+    Ready:          True
+    Restart Count:  0
+    Environment:    &lt;none&gt;
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-prrv2 (ro)
+      /var/www/html from web-vol-1 (rw)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  web-vol-1:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  pv-claim-1
+    ReadOnly:   false
+  default-token-prrv2:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-prrv2
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  &lt;none&gt;
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason                  Age    From                                                    Message
+  ----    ------                  ----   ----                                                    -------
+  Normal  Scheduled               6m6s   default-scheduler                                       Successfully assigned default/myweb-849b8d9fd7-7k5wn to ip-192-168-78-153.ap-south-1.compute.internal
+  Normal  SuccessfulAttachVolume  5m59s  attachdetach-controller                                 AttachVolume.Attach succeeded for volume &#34;pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef&#34;
+  Normal  Pulling                 5m47s  kubelet, ip-192-168-78-153.ap-south-1.compute.internal  Pulling image &#34;vimal13/apache-webserver-php&#34;
+  Normal  Pulled                  5m45s  kubelet, ip-192-168-78-153.ap-south-1.compute.internal  Successfully pulled image &#34;vimal13/apache-webserver-php&#34;
+  Normal  Created                 5m45s  kubelet, ip-192-168-78-153.ap-south-1.compute.internal  Created container apache-webserver-php
+  Normal  Started                 5m45s  kubelet, ip-192-168-78-153.ap-south-1.compute.internal  Started container apache-webserver-php
+[rasrivas@rasrivas k8s]$
+</code></pre><pre tabindex="0"><code>Volumes:
+web-vol-1:
+  Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+  ClaimName:  pv-claim-1
+  ReadOnly:   false
+default-token-prrv2:
+  Type:        Secret (a volume populated by a Secret)
+  SecretName:  default-token-prrv2
+  Optional:    false
+</code></pre></li>
+<li>
+<p>if we check our ELB nothing will be there now (<a href="http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/">http://a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com/</a>)</p>
+<ul>
+<li>PICUTURE eks_17.png</li>
+</ul>
+</li>
+<li>
+<p>now, if we copy data to the PODS, it will e permanent as it will be saved on the EBS vol</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+myweb-849b8d9fd7-7k5wn   1/1     Running   0          9m30s
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ kubectl cp index.html myweb-849b8d9fd7-7k5wn:/var/www/html/index.html
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>now, again, we check the ELB dns, we will see the data</p>
+<ul>
+<li>PICUTE 18</li>
+<li>also we can verify by CLI using curl
+<pre tabindex="0"><code> [rasrivas@rasrivas k8s]$ curl a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com
+  Hi this persistent data testing EKS cluster[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+</ul>
+</li>
+<li>
+<p>now if we delete the POS, and again &ldquo;rs&rdquo; using deployemnt create the POD this data will be availabe</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl delete pods myweb-849b8d9fd7-7k5wn
+pod &#34;myweb-849b8d9fd7-7k5wn&#34; deleted
+[rasrivas@rasrivas k8s]$ 
+</code></pre><pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pods
+NAME                     READY   STATUS              RESTARTS   AGE
+myweb-849b8d9fd7-p7bch   1/1     Running             0          34s
+</code></pre></li>
+<li>
+<p>now, we again see the ELB url, we can see the same data</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ curl a9d60e896fdd4472fbc4bcf313bee12d-340911159.ap-south-1.elb.amazonaws.com
+Hi this persistent data testing EKS cluster[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+</ul>
+<h1 id="we-can-also-change-the-storage-class">we can also change the storage class<a hidden class="anchor" aria-hidden="true" href="#we-can-also-change-the-storage-class">#</a></h1>
+<ul>
+<li>
+<p>we want to change the storage type from <strong>gp2</strong> to <strong>io1</strong></p>
+</li>
+<li>
+<p>by deault <strong>RECLAIM POLICY</strong> us <strong>Delete</strong> and <strong>STORAGECLASS</strong> is <strong>gp2</strong></p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                STORAGECLASS   REASON   AGE
+pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef   5Gi        RWO            Delete           Bound    default/pv-claim-1   gp2                     21m
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>deleting old deployment</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl delete deployments.apps --all
+deployment.apps &#34;myweb&#34; deleted
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>delete the PVC</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get pvc
+ NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+ pv-claim-1   Bound    pvc-3faa7e80-ec31-4630-aa54-42b5be1139ef   5Gi        RWO            gp2            31m
+ [rasrivas@rasrivas k8s]$ 
+ [rasrivas@rasrivas k8s]$ 
+ [rasrivas@rasrivas k8s]$ kubectl delete pvc --all
+ persistentvolumeclaim &#34;pv-claim-1&#34; deleted
+ [rasrivas@rasrivas k8s]$ 
+ [rasrivas@rasrivas k8s]$ 
+ [rasrivas@rasrivas k8s]$ kubectl get pvc
+ No resources found in default namespace.
+ [rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>here I am creating type with <strong>io1</strong> and also we will use <strong>Reclaim policy as retain</strong>, volume will not be deleted when the entire cluster is deleted</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ cat sc.yml 
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+
+metadata:
+  name: ekssc1
+provisioner: kubernetes.io/aws-eks
+parameters:
+  type: io1
+reclaimPolicy: Retain
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>creating it</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create -f sc.yml 
+storageclass.storage.k8s.io/ekssc1 created
+[rasrivas@rasrivas k8s]$ 
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>now we will see we will have two SC, but the defualt is <strong>gp2</strong></p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl get sc
+NAME            PROVISIONER             AGE
+ekssc1          kubernetes.io/aws-eks   6s
+gp2 (default)   kubernetes.io/aws-ebs   74m
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+<li>
+<p>now, we will say our pvc config file to use ekssc1 SC</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ cat pvc.yml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-claim-1
+
+spec:
+  storageClassName: ekssc1
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+[rasrivas@rasrivas k8s]$
+</code></pre></li>
+<li>
+<p>creating PVC which will use ekssc1 SC</p>
+<pre tabindex="0"><code>[rasrivas@rasrivas k8s]$ kubectl create -f pvc.yml 
+persistentvolumeclaim/pv-claim-1 created
+[rasrivas@rasrivas k8s]$ 
+</code></pre></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://rasrivas.in/tags/linux/">linux</a></li>
+      <li><a href="https://rasrivas.in/tags/filesysystem/">filesysystem</a></li>
+      <li><a href="https://rasrivas.in/tags/partition/">partition</a></li>
+      <li><a href="https://rasrivas.in/tags/lvm/">lvm</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://rasrivas.in/posts/partition_basics_3_swap/">
+    <span class="title">Next Page »</span>
+    <br>
+    <span>SWAP partition in Linux</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Setup an AWS EKS cluster with eksctl on twitter"
+        href="https://twitter.com/intent/tweet/?text=Setup%20an%20AWS%20EKS%20cluster%20with%20eksctl&amp;url=https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f&amp;hashtags=linux%2cfilesysystem%2cpartition%2clvm">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Setup an AWS EKS cluster with eksctl on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f&amp;title=Setup%20an%20AWS%20EKS%20cluster%20with%20eksctl&amp;summary=Setup%20an%20AWS%20EKS%20cluster%20with%20eksctl&amp;source=https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Setup an AWS EKS cluster with eksctl on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f&title=Setup%20an%20AWS%20EKS%20cluster%20with%20eksctl">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Setup an AWS EKS cluster with eksctl on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Setup an AWS EKS cluster with eksctl on whatsapp"
+        href="https://api.whatsapp.com/send?text=Setup%20an%20AWS%20EKS%20cluster%20with%20eksctl%20-%20https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Setup an AWS EKS cluster with eksctl on telegram"
+        href="https://telegram.me/share/url?text=Setup%20an%20AWS%20EKS%20cluster%20with%20eksctl&amp;url=https%3a%2f%2frasrivas.in%2fposts%2faws_eks_eksctl%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://rasrivas.in/">Rahul Srivastava</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
