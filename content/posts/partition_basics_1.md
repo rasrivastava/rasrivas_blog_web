@@ -115,3 +115,160 @@ xvdb    202:16   0    1G  0 disk
 ```
 # umount /mnt/rasrivas/
 ```
+
+## Making a partition permanent
+
+#### Listing the partition on the system
+
+```
+# lsblk 
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sr0                  11:0    1  7.9G  0 rom  /dvd
+nvme0n1             259:0    0  100G  0 disk 
+├─nvme0n1p1         259:1    0    1G  0 part /boot
+└─nvme0n1p2         259:2    0   99G  0 part 
+  ├─rhel_192-root   253:0    0   50G  0 lvm  /
+  ├─rhel_192-swap   253:1    0  4.2G  0 lvm  [SWAP]
+  └─rhel_192-home   253:2    0 44.8G  0 lvm  /home
+nvme0n2             259:3    0    5G  0 disk 
+└─mydemovg-mydemolv 253:3    0    8G  0 lvm  /root/mydemodirectory
+nvme0n3             259:4    0    5G  0 disk 
+├─mydemovg-mydemolv 253:3    0    8G  0 lvm  /root/mydemodirectory
+└─mydemovg-demolv2  253:4    0   12M  0 lvm
+#
+```
+
+```
+# df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+devtmpfs                      devtmpfs  1.6G     0  1.6G   0% /dev
+tmpfs                         tmpfs     1.6G  4.0K  1.6G   1% /dev/shm
+tmpfs                         tmpfs     1.6G  9.7M  1.6G   1% /run
+tmpfs                         tmpfs     1.6G     0  1.6G   0% /sys/fs/cgroup
+/dev/mapper/rhel_192-root     xfs        50G  9.9G   41G  20% /
+/dev/mapper/rhel_192-home     xfs        45G  352M   45G   1% /home
+/dev/nvme0n1p1                xfs      1014M  211M  804M  21% /boot
+/dev/sr0                      iso9660   7.9G  7.9G     0 100% /dvd
+tmpfs                         tmpfs     316M  1.2M  315M   1% /run/user/42
+tmpfs                         tmpfs     316M  4.0K  316M   1% /run/user/0
+/dev/mapper/mydemovg-mydemolv ext4      7.9G   32M  7.4G   1% /root/mydemodirectory
+```
+
+### Listing the mount command
+
+```
+# mount | grep /dev/mapper/mydemovg-mydemolv
+/dev/mapper/mydemovg-mydemolv on /root/mydemodirectory type ext4 (rw,relatime,seclabel)
+```
+
+### Listing the current /etc/fstab file
+
+```
+# cat /etc/fstab 
+
+#
+# /etc/fstab
+# Created by anaconda on Sat May 30 07:17:47 2020
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run 'systemctl daemon-reload' to update systemd
+# units generated from this file.
+#
+/dev/mapper/rhel_192-root /                       xfs     defaults        0 0
+UUID=8b6ecb4a-2165-4726-a5f6-dfad4827aae3 /boot                   xfs     defaults        0 0
+/dev/mapper/rhel_192-home /home                   xfs     defaults        0 0
+/dev/mapper/rhel_192-swap swap                    swap    defaults        0 0
+```
+
+### Making entry in the fstab
+
+- Here we have six fields
+  - device_name
+  - mount_point
+  - format
+  - options
+  - diskcheck
+  - disksync
+
+
+- adding below line in the /etc/fstab
+  ```
+  /dev/mydemovg/mydemolv /root/mydemodirectory ext4 defaults 0 0
+  ```
+  
+  ```
+  # cat /etc/fstab 
+
+  #
+  # /etc/fstab
+  # Created by anaconda on Sat May 30 07:17:47 2020  
+  #
+  # Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+  # See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+  #
+  # After editing this file, run 'systemctl daemon-reload' to update systemd
+  # units generated from this file. 
+  #
+  /dev/mapper/rhel_192-root /                       xfs     defaults        0 0
+  UUID=8b6ecb4a-2165-4726-a5f6-dfad4827aae3 /boot                   xfs     defaults        0 0
+  /dev/mapper/rhel_192-home /home                   xfs     defaults        0 0
+  /dev/mapper/rhel_192-swap swap                    swap    defaults        0 0
+
+  /dev/mydemovg/mydemolv /root/mydemodirectory ext4 defaults 0 0
+  ```
+  
+- We need to verify that everything we have written in the file is correct, we can run below command to test it
+  `# mount -a`
+
+
+### we also have a command blkid to list all the partitions
+
+- this shows us the **UUID** for the partiotion which is always unique
+- sometime it happens the partition name changes OR if storage is coming from Network (**NAS**) but the **UUID** will never change
+
+```
+# blkid 
+/dev/nvme0n1: PTUUID="78f0aa00" PTTYPE="dos"
+/dev/nvme0n1p1: UUID="8b6ecb4a-2165-4726-a5f6-dfad4827aae3" TYPE="xfs" PARTUUID="78f0aa00-01"
+/dev/nvme0n1p2: UUID="0o6PU9-2Igb-5GEl-hCYJ-ZkGb-ZngN-EIxCN2" TYPE="LVM2_member" PARTUUID="78f0aa00-02"
+/dev/nvme0n2: UUID="G7hzUX-cqXS-A9v1-9VaS-k4Yl-ZEUd-Klj9RL" TYPE="LVM2_member"
+/dev/nvme0n3: UUID="d4XYBS-3HMS-MURj-0EvE-NceI-24ns-lzoPIh" TYPE="LVM2_member"
+/dev/sr0: UUID="2020-04-04-08-21-15-00" LABEL="RHEL-8-2-0-BaseOS-x86_64" TYPE="iso9660" PTUUID="47055c33" PTTYPE="dos"
+/dev/mapper/rhel_192-root: UUID="81345e98-f211-4811-bf37-8cfd9f9b0330" TYPE="xfs"
+/dev/mapper/rhel_192-swap: UUID="137d9a23-b533-4684-b489-7d4185478180" TYPE="swap"
+/dev/mapper/rhel_192-home: UUID="ae05ea7b-ecd1-4062-8f18-0a84ea2f7350" TYPE="xfs"
+/dev/mapper/mydemovg-mydemolv: UUID="fe2bf001-7323-4f9c-a00e-525f12ed6098" TYPE="ext4"
+```
+
+- making entry in fstab using UUID
+  ```
+  UUID=fe2bf001-7323-4f9c-a00e-525f12ed6098 /root/mydemodirectory ext4 defaults 0 0
+  ```
+  
+  ```
+  # cat /etc/fstab
+
+  #
+  # /etc/fstab
+  # Created by anaconda on Sat May 30 07:17:47 2020
+  #
+  # Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+  # See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+  #
+  # After editing this file, run 'systemctl daemon-reload' to update systemd
+  # units generated from this file.
+  #
+  /dev/mapper/rhel_192-root /                       xfs     defaults        0 0
+  UUID=8b6ecb4a-2165-4726-a5f6-dfad4827aae3 /boot                   xfs     defaults        0 0
+  /dev/mapper/rhel_192-home /home                   xfs     defaults        0 0
+  /dev/mapper/rhel_192-swap swap                    swap    defaults        0 0
+
+  UUID=fe2bf001-7323-4f9c-a00e-525f12ed6098 /root/mydemodirectory ext4 defaults 0 0
+  #
+  ```
+  
+  ```
+  # mount -a
+  ```
