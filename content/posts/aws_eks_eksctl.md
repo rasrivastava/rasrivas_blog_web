@@ -344,7 +344,6 @@ It is written in Go, uses CloudFormation, was created by Weaveworks and it welco
   service/myweb exposed
   [rasrivas@rasrivas k8s]$
   ```
-  - at the ......
   
   - deleting everyting
     ```
