@@ -2,7 +2,7 @@
 title: "User Session Management in Linux"
 date: 2022-05-15T14:03:54+05:30
 draft: false
-tags: ["linux", "session", "user_management", "cgroup"]
+tags: ["linux", "session", "user_management", "cgroup", "metrice"]
 categories: ["linux", "operating system", "user_management", "cgroup"]
 ---
 
