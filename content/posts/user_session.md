@@ -2,8 +2,8 @@
 title: "User Session Management in Linux"
 date: 2022-05-15T14:03:54+05:30
 draft: false
-tags: ["linux", "session", "user_management"]
-categories: ["linux", "operating system", "user_management"]
+tags: ["linux", "session", "user_management", "cgroup"]
+categories: ["linux", "operating system", "user_management", "cgroup"]
 ---
 
 - `program` --> is executed by the operating system with the help of kernel

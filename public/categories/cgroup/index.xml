@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>cgroup on Rahul Srivastava</title>
+    <link>https://rasrivas.in/categories/cgroup/</link>
+    <description>Recent content in cgroup on Rahul Srivastava</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 15 May 2022 14:03:54 +0530</lastBuildDate><atom:link href="https://rasrivas.in/categories/cgroup/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>User Session Management in Linux</title>
+      <link>https://rasrivas.in/posts/user_session/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/posts/user_session/</guid>
+      <description>program &amp;ndash;&amp;gt; is executed by the operating system with the help of kernel
+ OS (kernel) (RAM + CPU) &amp;ndash;&amp;gt; program converts into process and loads on the RAM RAM &amp;lt;&amp;ndash; will the take all the information from the CPU    If the entire RAM or CPU is asked by the program, by default the operating system assigns the resources but this can be not good practice for the other (crtical) resources.</description>
+    </item>
+    
+  </channel>
+</rss>
