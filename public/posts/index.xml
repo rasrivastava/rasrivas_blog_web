@@ -6,7 +6,17 @@
     <description>Recent content in Posts on Rahul Srivastava</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 08 May 2022 18:52:59 +0530</lastBuildDate><atom:link href="https://rasrivas.in/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 May 2022 14:03:54 +0530</lastBuildDate><atom:link href="https://rasrivas.in/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>User Session Management in Linux</title>
+      <link>https://rasrivas.in/posts/user_session/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/posts/user_session/</guid>
+      <description>program &amp;ndash;&amp;gt; is executed by the operating system with the help of kernel
+ OS (kernel) (RAM + CPU) &amp;ndash;&amp;gt; program converts into process and loads on the RAM RAM &amp;lt;&amp;ndash; will the take all the information from the CPU    If the entire RAM or CPU is asked by the program, by default the operating system assigns the resources but this can be not good practice for the other (crtical) resources.</description>
+    </item>
+    
     <item>
       <title>Setup an AWS EKS cluster with eksctl</title>
       <link>https://rasrivas.in/posts/aws_eks_eksctl/</link>
