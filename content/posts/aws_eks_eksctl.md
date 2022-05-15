@@ -345,7 +345,7 @@ It is written in Go, uses CloudFormation, was created by Weaveworks and it welco
   [rasrivas@rasrivas k8s]$
   ```
   
-  - deleting everyting
+  - deleting everyting created (cleanup)
     ```
     [rasrivas@rasrivas k8s]$ kubectl delete all --all
     pod "myweb-79b48fb9f5-5mgjm" deleted
