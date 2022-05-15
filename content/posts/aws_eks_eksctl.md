@@ -337,9 +337,6 @@ It is written in Go, uses CloudFormation, was created by Weaveworks and it welco
    - we know **Node Port** service is only reachable to internal network
    - to avail the external connectivity we need to add an **ELB**
  
-- Advantages of ELB:
-  - A 
-  - B
 
 - creating an ELB for the deployment
   ```
