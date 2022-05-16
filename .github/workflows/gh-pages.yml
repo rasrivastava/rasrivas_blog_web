@@ -1,4 +1,4 @@
-name: GitHub Pages
+name: Built and Deploy Site
 
 on:
   push:
@@ -8,23 +8,22 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GH_TOKEN }}
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: '0.91.2'
+          hugo-version: 'latest'
           # extended: true
 
-      - name: Build
+      - name: Build site with Hugo
         run: hugo --minify
 
       - name: Deploy
