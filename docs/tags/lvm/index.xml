@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>lvm on Rahul Srivastava</title>
+    <link>https://rasrivas.in/tags/lvm/</link>
+    <description>Recent content in lvm on Rahul Srivastava</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 08 May 2022 18:52:59 +0530</lastBuildDate><atom:link href="https://rasrivas.in/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Setup an AWS EKS cluster with eksctl</title>
+      <link>https://rasrivas.in/posts/aws_eks_eksctl/</link>
+      <pubDate>Sun, 08 May 2022 18:52:59 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/posts/aws_eks_eksctl/</guid>
+      <description>eksctl is a simple CLI tool for creating and managing clusters on EKS - Amazon&amp;rsquo;s managed Kubernetes service for EC2.
+It is written in Go, uses CloudFormation, was created by Weaveworks and it welcomes contributions from the community.
+eksctl Github project
+Details Course Content:   Setup an AWS EKS cluster with eksctl
+ Architecture &amp;amp; Create EKS Cluster with eksctl    Developing for EKS
+ Understanding the Application Architecture Building from Source Publishing to ECR Deploying to EKS Deploying an Application to EKS    AWS EKS operations using eksctl</description>
+    </item>
+    
+    <item>
+      <title>Logical Volume Manager (LVM) in Linux</title>
+      <link>https://rasrivas.in/posts/partition_basics_2/</link>
+      <pubDate>Sun, 08 May 2022 18:00:41 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/posts/partition_basics_2/</guid>
+      <description>LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
+With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.
+The physical volumes are combined into logical volumes, with the exception of the /boot partition. The /boot partition cannot be on a logical volume group because the boot loader cannot read it.</description>
+    </item>
+    
+  </channel>
+</rss>

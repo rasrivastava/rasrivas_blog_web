@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Rahul Srivastava</title>
+    <link>https://rasrivas.in/tags/</link>
+    <description>Recent content in Tags on Rahul Srivastava</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 15 May 2022 14:03:54 +0530</lastBuildDate><atom:link href="https://rasrivas.in/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>cgroup</title>
+      <link>https://rasrivas.in/tags/cgroup/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/cgroup/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>linux</title>
+      <link>https://rasrivas.in/tags/linux/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/linux/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>metrice</title>
+      <link>https://rasrivas.in/tags/metrice/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/metrice/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>session</title>
+      <link>https://rasrivas.in/tags/session/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/session/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>user_management</title>
+      <link>https://rasrivas.in/tags/user_management/</link>
+      <pubDate>Sun, 15 May 2022 14:03:54 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/user_management/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>filesysystem</title>
+      <link>https://rasrivas.in/tags/filesysystem/</link>
+      <pubDate>Sun, 08 May 2022 18:52:59 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/filesysystem/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>lvm</title>
+      <link>https://rasrivas.in/tags/lvm/</link>
+      <pubDate>Sun, 08 May 2022 18:52:59 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/lvm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>partition</title>
+      <link>https://rasrivas.in/tags/partition/</link>
+      <pubDate>Sun, 08 May 2022 18:52:59 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/partition/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>swap</title>
+      <link>https://rasrivas.in/tags/swap/</link>
+      <pubDate>Sun, 08 May 2022 18:36:43 +0530</pubDate>
+      
+      <guid>https://rasrivas.in/tags/swap/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
