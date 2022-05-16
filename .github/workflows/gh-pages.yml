@@ -3,7 +3,7 @@ name: hugo-latest-cd
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   TOKEN: ${{ secrets.GITHUB_TOKEN }}
